@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:installLocation="auto"
+  android:versionCode="1"
+  android:versionName="1.0">
+  
+  <!-- Copyright 2024 Rune Berg (http://runeberg.io | https://github.com/1runeberg)  -->
+  <!-- Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0) -->
+  <!-- SPDX-License-Identifier: Apache-2.0 -->
+
+  <!-- Set head tracking -->
+  <uses-feature
+    android:name="android.hardware.vr.headtracking" android:required="false"  android:version="1" />
+
+  <!-- Set passthrough -->
+  <uses-feature android:name="com.oculus.feature.PASSTHROUGH" android:required="true" />
+
+  <!-- Set hand tracking -->
+  <uses-feature android:name="oculus.software.handtracking" android:required="false" />
+  <uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
+
+  <!-- OpenXR permissions -->
+  <uses-permission android:name="org.khronos.openxr.permission.OPENXR" />
+  <uses-permission android:name="org.khronos.openxr.permission.OPENXR_SYSTEM" />
+
+  <queries>
+    <provider android:authorities="org.khronos.openxr.runtime_broker;org.khronos.openxr.system_runtime_broker" />
+  </queries>
+
+  <application
+    android:allowBackup="true"
+    android:icon="@mipmap/ic_openxr_app"
+    android:label="@string/app_name"
+    android:roundIcon="@mipmap/ic_openxr_app">
+
+    <!-- The activity is the built-in NativeActivity framework class. -->
+    <!-- launchMode is set to singleTask because there should never be multiple copies of the app running. -->
+    <!-- Theme.Black.NoTitleBar.Fullscreen gives solid black instead of a (bad stereoscopic) gradient on app transition. -->
+    <activity android:name="dev.xrnative.handtrackingxr.MainActivity"
+      android:configChanges="screenSize|screenLayout|orientation|keyboardHidden|keyboard|navigation|uiMode|density"
+      android:excludeFromRecents="false"
+      android:launchMode="singleTask"
+      android:exported="true"
+      android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+      tools:ignore="NonResizeableActivity">
+
+      <!-- Tell NativeActivity the name of the .so -->
+      <meta-data
+        android:name="android.app.lib_name"
+        android:value="handtrackingxr" />
+
+      <!-- Specify quest supported hardware -->
+      <meta-data android:name="com.oculus.supportedDevices" android:value="all" />
+
+      <!-- Enable apk to show up as a launchable icon -->
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+
+            <!-- OpenXR -->
+            <category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
+
+            <!-- Oculus/Meta devices -->
+            <category android:name="com.oculus.intent.category.VR" />
+
+        </intent-filter>
+    </activity>
+  </application>
+</manifest>

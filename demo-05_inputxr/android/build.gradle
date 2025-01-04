@@ -1,0 +1,118 @@
+// Copyright 2024 Rune Berg (http://runeberg.io | https://github.com/1runeberg)
+// Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+// SPDX-License-Identifier: Apache-2.0
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.7.1'
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+apply plugin: "com.android.application"
+
+android {
+    // Project variables
+    def appPackageName = "dev.xrnative.inputxr"
+    def appVersionCode = 1
+    def appVersionName = "1.0"
+
+    def cmakeArgs = "-DANDROID_PROJECT=demo-05_inputxr"     // This is used to filter compile for current app only if cmake builds multiple apps
+    def cmakePath = "../../CMakeLists.txt"                  // Points to root github repository so xrlib is built along with the project
+    def cmakeMinVersion = "3.22.1"                          // xrlib min cmake version
+
+    def appCompileSdk = 33
+    def appMinSdkVersion = 32       // Minimum required by Meta.
+                                            // Vulkan requires at least 24, however 26 is recommended.
+
+    def androidManifest = "AndroidManifest.xml"
+    def javaSrcDirectory = "java"
+    def resourcesDirectory = "resources"
+
+    // Config proper
+    compileSdk = appCompileSdk
+    namespace = appPackageName
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    signingConfigs  {
+        release {
+            keyAlias SIGNING_KEY_ALIAS
+            keyPassword SIGNING_KEY_PASSWORD
+            storeFile file(SIGNING_KEYSTORE_FILE)
+            storePassword SIGNING_KEYSTORE_PASSWORD
+
+            enableV3Signing  true
+        }
+
+        debug {
+            keyAlias SIGNING_KEY_ALIAS
+            keyPassword SIGNING_KEY_PASSWORD
+            storeFile file(SIGNING_KEYSTORE_FILE)
+            storePassword SIGNING_KEYSTORE_PASSWORD
+
+            enableV3Signing  true
+        }
+    }
+
+    defaultConfig {
+        applicationId = appPackageName
+        versionName = appVersionName
+        versionCode = appVersionCode
+        minSdkVersion appMinSdkVersion
+
+        externalNativeBuild {
+            ndk {
+                abiFilters "arm64-v8a"
+            }
+            cmake {
+                arguments = [cmakeArgs]
+            }
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile androidManifest
+            java.srcDirs = [javaSrcDirectory]
+            res.srcDir resourcesDirectory
+            assets.srcDirs =['../../xrlib/res/shaders/bin', '../../xrlib/res/models/bin', '../assets/bin' ]
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled = true    // Enable code shrinking, obfuscation, and optimization
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt")
+            signingConfig signingConfigs.release
+        }
+
+        debug {
+            minifyEnabled = false
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = cmakePath
+            version = cmakeMinVersion
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "${defaultConfig.applicationId}-${variant.buildType.name}-${defaultConfig.versionName}.apk"
+        }
+    }
+}

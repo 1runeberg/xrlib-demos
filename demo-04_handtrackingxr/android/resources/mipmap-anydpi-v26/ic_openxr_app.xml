@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      Copyright 2024 Rune Berg (http://runeberg.io | https://github.com/1runeberg)
+      Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+      SPDX-License-Identifier: Apache-2.0
+    -->
+  <background android:drawable="@color/ic_openxr_app_bg" />
+  <foreground android:drawable="@drawable/ic_openxr_app" />
+</adaptive-icon>

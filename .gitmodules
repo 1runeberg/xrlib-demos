@@ -1,0 +1,3 @@
+[submodule "xrlib"]
+	path = xrlib
+	url = https://github.com/1runeberg/xrlib.git
