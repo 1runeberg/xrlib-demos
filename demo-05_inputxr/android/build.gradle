@@ -8,7 +8,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.1'
+        classpath 'com.android.tools.build:gradle:8.7.3'
     }
 }
 
@@ -73,6 +73,7 @@ android {
 
         externalNativeBuild {
             ndk {
+                //noinspection ChromeOsAbiSupport
                 abiFilters "arm64-v8a"
             }
             cmake {
@@ -103,6 +104,11 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
     externalNativeBuild {
         cmake {
             path = cmakePath
@@ -110,8 +116,8 @@ android {
         }
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.all {
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach {
             outputFileName = "${defaultConfig.applicationId}-${variant.buildType.name}-${defaultConfig.versionName}.apk"
         }
     }

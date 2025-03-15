@@ -8,7 +8,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.1'
+        classpath 'com.android.tools.build:gradle:8.7.3'
     }
 }
 
@@ -30,8 +30,9 @@ android {
     def cmakeMinVersion = "3.22.1"                          // xrlib min cmake version
 
     def appCompileSdk = 33
-    def appMinSdkVersion = 32       // Minimum required by Meta.
-                                            // Vulkan requires at least 24, however 26 is recommended.
+    def appMinSdkVersion = 31       // Minimum required by Meta.
+                                            // Vulkan requires only 24, however built-in renderer uses optimizations that require a higher version.
+                                            // If you want to use the built-in renderer, you need to set this to 32.
 
     def androidManifest = "AndroidManifest.xml"
     def javaSrcDirectory = "java"
@@ -73,6 +74,7 @@ android {
 
         externalNativeBuild {
             ndk {
+                //noinspection ChromeOsAbiSupport
                 abiFilters "arm64-v8a"
             }
             cmake {
@@ -103,6 +105,11 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
     externalNativeBuild {
         cmake {
             path = cmakePath
@@ -110,8 +117,8 @@ android {
         }
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.all {
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach {
             outputFileName = "${defaultConfig.applicationId}-${variant.buildType.name}-${defaultConfig.versionName}.apk"
         }
     }
