@@ -137,8 +137,10 @@ int main( int argc, char *argv[] )
 
 	// (14) Exit app - xrlib objects (instance, session, renderer, etc) handles proper cleanup once unique pointers goes out of scope.
 	//				  Note that as they are in the same scope in this demo, order of destruction here is automatically enforced only when using C++20 and above
-	std::cout << "\n\nPress enter to end.";
-	std::cin.get();
+    #ifndef XR_USE_PLATFORM_ANDROID
+    std::cout << "\n\nPress enter to end.";
+    std::cin.get();
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
+    #endif
 }

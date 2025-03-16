@@ -42,10 +42,7 @@ namespace xrapp
 
 		#ifdef XR_USE_PLATFORM_ANDROID
 
-			#define EXIT_SUCCESS
-			#define EXIT_FAILURE
-
-			XrApp( 
+			XrApp(
 				struct android_app *pAndroidApp, 
 				const std::string &sAppName, 
 				const XrVersion32 unAppVersion, 
