@@ -19,7 +19,7 @@ set(CMAKE_SUPPRESS_REGENERATION true)
 ######################
 
 # Set project variables
-project("xrlib_demos" VERSION 1.0.0)
+project("xrlib_demos" VERSION 1.1.0)
 
 # Set config files
 # Set CI files
