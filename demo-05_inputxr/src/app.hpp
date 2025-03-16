@@ -48,14 +48,14 @@ namespace app
 			bool StartRenderFrame();
 			void EndRenderFrame();
 
-			bool ScaleBlade( XrVector3f &outScale, float inputValue, float refreshRate, float scaleSpeed = 0.001f );
+			static bool ScaleBlade( XrVector3f &outScale, float inputValue, float refreshRate, float scaleSpeed = 0.001f );
 
-			void ActionCallback_SetControllerActive( SAction *pAction, uint32_t unActionStateIndex );
+			void ActionCallback_SetControllerActive( SAction *pAction, uint32_t unActionStateIndex ) const;
 			void ActionCallback_ScaleBlade( SAction *pAction, uint32_t unActionStateIndex );
 			void ActionCallback_CycleRenderMode( SAction *pAction, uint32_t unActionStateIndex );
 			void ActionCallback_TogglePassthrough( SAction *pAction, uint32_t unActionStateIndex );
 
-			void ActionHaptic( SAction *pAction, uint32_t unActionStateIndex );
+			void ActionHaptic( SAction *pAction, uint32_t unActionStateIndex ) const;
 
 			struct SAppPipelines : public SPipelines
 			{

@@ -81,8 +81,8 @@ namespace xrapp
 		{
 			m_pPassthrough = std::make_unique< FB::CPassthrough >( m_pXrInstance->GetXrInstance() );
 
-			if ( m_pXrInstance->IsExtensionEnabled( XR_FB_TRIANGLE_MESH_EXTENSION_NAME ) );
-			m_pTriangleMesh = std::make_unique< FB::CTriangleMesh >( m_pXrInstance->GetXrInstance() );
+			if ( m_pXrInstance->IsExtensionEnabled( XR_FB_TRIANGLE_MESH_EXTENSION_NAME ) )
+			    m_pTriangleMesh = std::make_unique< FB::CTriangleMesh >( m_pXrInstance->GetXrInstance() );
 		}
 
 		if ( m_pXrInstance->IsExtensionEnabled( XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME ) )

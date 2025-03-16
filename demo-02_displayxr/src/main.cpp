@@ -25,9 +25,6 @@ using namespace xrlib;
 /// the active openxr runtime.
 
 #ifdef XR_USE_PLATFORM_ANDROID
-    // Not checking for prior definitions for brevity, may cause compiler warnings on some implementations
-    #define EXIT_SUCCESS
-    #define EXIT_FAILURE
 
 	void android_main( struct android_app *pAndroidApp )
 	{
@@ -36,7 +33,7 @@ using namespace xrlib;
 
         // (1b) Initialize android openxr loader
         if ( !XR_UNQUALIFIED_SUCCESS( pXrInstance->InitAndroidLoader( pAndroidApp ) ) )
-            return EXIT_FAILURE;
+            return;
 #else
 	int main( int argc, char *argv[] )
 	{
@@ -49,31 +46,42 @@ using namespace xrlib;
 			XR_KHR_VULKAN_ENABLE_EXTENSION_NAME,	// this is the graphics api we will use - xrlib only supports vulkan at this time
 			XR_KHR_VISIBILITY_MASK_EXTENSION_NAME	// this helps our app improve rendering performance by stenciling out portions of the screen that the user can't see based on their hmd lenses
 		};
-		uint32_t unRequiredExtensionCount = vecRequiredExtensions.size();
-
 
 		// (3) Check that the user's runtime can run our app
-		std::cout << "This app requires the following openxr extensions: " << std::endl;
+        LogError( "xrlib", "This app requires the following openxr extensions: " );
 		for ( auto ext : vecRequiredExtensions ) 
 			std::cout << ext << std::endl;
 
 		if( !XR_UNQUALIFIED_SUCCESS( pXrInstance->RemoveUnsupportedExtensions(vecRequiredExtensions) ) )
-			return EXIT_FAILURE;
+        #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+        #else
+            return EXIT_FAILURE;
+        #endif
 
 		if ( vecRequiredExtensions.size() != vecRequiredExtensions.size() )
 		{
-			std::cout << "FATAL: Current openxr runtime does not support all required extensions. Only the following was found:" << std::endl;
+            LogError( "xrlib", "FATAL: Current openxr runtime does not support all required extensions. Only the following was found:" );
 			for ( auto ext : vecRequiredExtensions ) 
 				std::cout << ext << std::endl;
 
-			return EXIT_FAILURE;
+            #ifdef XR_USE_PLATFORM_ANDROID
+                return;
+            #else
+                return EXIT_FAILURE;
+            #endif
 		}
 		
 		// (4) Now we're ready to initialize an openxr instance
 		std::vector< const char * > vecAPILayers;
 		if( !XR_UNQUALIFIED_SUCCESS( pXrInstance->Init( vecRequiredExtensions, vecAPILayers , 0, nullptr ) ) )
-			return EXIT_FAILURE;
-		
+
+        #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+        #else
+            return EXIT_FAILURE;
+        #endif
+
 
 #ifdef XR_USE_PLATFORM_ANDROID
 		// For android, we need to pass the android state management function to the xrProvider
@@ -84,7 +92,12 @@ using namespace xrlib;
 		std::unique_ptr< CSession > pXrSession = std::make_unique< CSession >( pXrInstance.get() );
 		SSessionSettings defaultSessionSettings;
 		if( !XR_UNQUALIFIED_SUCCESS( pXrSession->Init( defaultSessionSettings ) ) )
-			return EXIT_FAILURE;
+
+        #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+        #else
+            return EXIT_FAILURE;
+        #endif
 
 		// (6) Handle extensions
 		std::unique_ptr< KHR::CVisibilityMask > pVisMask = nullptr;
@@ -100,8 +113,12 @@ using namespace xrlib;
 		if (vkFormatColor == 0 || vkFormatDepth == 0)
 		{
 			// Our app's needed texture formats aren't supported.
-			std::cout << "FATAL: Current openxr runtime does not support the texture formats required by this app." << std::endl;
-			return EXIT_FAILURE;
+            LogError( "xrlib", "FATAL: Current openxr runtime does not support the texture formats required by this app." );
+            #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+            #else
+            return EXIT_FAILURE;
+            #endif
 		}
 
 		// (8) Create and initialize xrlib's built-in vulkan stereo renderer for our xr app
@@ -182,7 +199,7 @@ using namespace xrlib;
 
 		// Floor
 		{
-			CColoredCube *pFloor = new CColoredCube( pXrSession.get(), pRenderInfo.get(), true, { 2.f, 0.1f, 2.f } );
+			auto *pFloor = new CColoredCube( pXrSession.get(), pRenderInfo.get(), true, { 2.f, 0.1f, 2.f } );
 			pFloor->instances[ 0 ].pose = { { 0.f, 0.f, 0.f, 1.f }, { 0.0f, 0.f, 0.f } };
 			pFloor->Recolor( { 0.25f, 0.25f, 0.25f }, 0.75f );
 			pFloor->InitBuffers();
@@ -191,7 +208,7 @@ using namespace xrlib;
 
 		// Axis indicators
 		{
-			CColoredPyramid *pAxisIndicator = new CColoredPyramid( pXrSession.get(), pRenderInfo.get(), true, { 0.45f, 0.45f, 0.45f } );
+			auto *pAxisIndicator = new CColoredPyramid( pXrSession.get(), pRenderInfo.get(), true, { 0.45f, 0.45f, 0.45f } );
 			
 			pAxisIndicator->AddInstance( 3, { 0.25f, 0.25f, 0.25f } );	 // add three more instances so we have one for each cardinal direction
 			pAxisIndicator->instances[ 0 ].pose = { { 0.f, 0.f, 0.f, 1.f }, { 0.0f, 0.25f, -1.f } };			   // North
@@ -270,8 +287,10 @@ using namespace xrlib;
 
 		// (13) Exit app - xrlib objects (instance, session, renderer, etc) handles proper cleanup once unique pointers goes out of scope.
 		//				  Note that as they are in the same scope in this demo, order of destruction here is automatically enforced only when using C++20 and above
+        #ifndef XR_USE_PLATFORM_ANDROID
 		std::cout << "\n\nPress enter to end.";
 		std::cin.get();
 
-		return EXIT_SUCCESS;
+        return EXIT_SUCCESS;
+        #endif
 	}

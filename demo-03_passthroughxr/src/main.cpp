@@ -43,26 +43,42 @@ int main( int argc, char *argv[] )
 
 	// (3) Initialize openxr instance
 	if ( !XR_UNQUALIFIED_SUCCESS( pApp->InitInstance( vecRequiredExtensions, vecAPILayers ) ) )
-		return EXIT_FAILURE;
+    #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+    #else
+        return EXIT_FAILURE;
+    #endif
 
 	// (4) Initialize openxr session
 	SSessionSettings defaultSessionSettings;
 	if ( !XR_UNQUALIFIED_SUCCESS( pApp->InitSession( defaultSessionSettings ) ) )
-		return EXIT_FAILURE;
+    #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+    #else
+        return EXIT_FAILURE;
+    #endif
 
 	// (5) Check for required extensions our app needs
 	if ( !pApp->GetInstance()->IsExtensionEnabled( XR_FB_PASSTHROUGH_EXTENSION_NAME ) )
 	{
 		LogError( pApp->GetInstance()->GetAppName(), 
 			"The current openxr runtime does not support an extension this app needs: %s \n", XR_FB_PASSTHROUGH_EXTENSION_NAME  );
-		return EXIT_FAILURE;
+        #ifdef XR_USE_PLATFORM_ANDROID
+                return;
+        #else
+                return EXIT_FAILURE;
+        #endif
 	}
 
 	// (6) Create FB Passthrough
 	std::unique_ptr< FB::CPassthrough > pPassthrough = std::make_unique< FB::CPassthrough >( pApp->GetInstance()->GetXrInstance() );
-	XrPassthroughFlagsFB passthroughFlags = XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB;
+
 	if ( !XR_UNQUALIFIED_SUCCESS( pPassthrough->Init( pApp->GetSession()->GetXrSession(), pApp->GetInstance() ) ) )
-		return EXIT_FAILURE;
+    #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+    #else
+        return EXIT_FAILURE;
+    #endif
 
 	LogInfo( pApp->GetInstance()->GetAppName(), "User's device supports passthrough: %s", pPassthrough->BSystemSupportsPassthrough() ? "true" : "false" );
 	LogInfo( pApp->GetInstance()->GetAppName(), "User's device supports color passthrough: %s", pPassthrough->BSystemSupportsColorPassthrough() ? "true" : "false" );
@@ -73,17 +89,29 @@ int main( int argc, char *argv[] )
 		ExtBase_Passthrough::ELayerType::FULLSCREEN, 
 		XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT, 
 		XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB ) ) )
-			return EXIT_FAILURE;
+        #ifdef XR_USE_PLATFORM_ANDROID
+                return;
+        #else
+            return EXIT_FAILURE;
+        #endif
 
 	pPassthrough->Start();
 
 	// (8) Initialize renderer
 	if ( !XR_UNQUALIFIED_SUCCESS( pApp->InitRender( { VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SRGB }, { VK_FORMAT_D24_UNORM_S8_UINT } ) ) )
-		return EXIT_FAILURE;
+    #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+    #else
+        return EXIT_FAILURE;
+    #endif
 
 	// (9) Create render pass
 	if ( !XR_UNQUALIFIED_SUCCESS( pApp->CreateMainRenderPass() ) )
-		return EXIT_FAILURE;
+    #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+    #else
+        return EXIT_FAILURE;
+    #endif
 
 	// (10) Create graphics pipelines
 	if ( pApp->BUseVisVMask() )
@@ -100,7 +128,7 @@ int main( int argc, char *argv[] )
 	
 	// Floor
 	{
-		CColoredCube *pFloor = new CColoredCube( pApp->GetSession(), pApp->pRenderInfo.get(), true, { 1.f, 0.1f, 1.f } );
+		auto *pFloor = new CColoredCube( pApp->GetSession(), pApp->pRenderInfo.get(), true, { 1.f, 0.1f, 1.f } );
 		pFloor->instances[ 0 ].pose = { { 0.f, 0.f, 0.f, 1.f }, { 0.0f, 0.f, 0.f } };
 		pFloor->Recolor( { 1.f, 1.f, 0.f }, 0.75f );
 		pFloor->InitBuffers();
@@ -145,8 +173,9 @@ int main( int argc, char *argv[] )
 
 	// (14) Exit app - xrlib objects (instance, session, renderer, etc) handles proper cleanup once unique pointers goes out of scope.
 	//				  Note that as they are in the same scope in this demo, order of destruction here is automatically enforced only when using C++20 and above
-	std::cout << "\n\nPress enter to end.";
-	std::cin.get();
-
-	return EXIT_SUCCESS;
+    #ifndef XR_USE_PLATFORM_ANDROID
+        std::cout << "\n\nPress enter to end.";
+        std::cin.get();
+        return EXIT_SUCCESS;
+    #endif
 }

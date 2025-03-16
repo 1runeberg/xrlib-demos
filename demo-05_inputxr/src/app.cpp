@@ -53,43 +53,68 @@ namespace app
 
 		// (2) Initialize openxr instance
 		if ( !XR_UNQUALIFIED_SUCCESS( InitInstance( vecRequiredExtensions, vecAPILayers ) ) )
-			return EXIT_FAILURE;
+            #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+            #else
+            return EXIT_FAILURE;
+            #endif
 
 		// (3) Initialize openxr session
 		SSessionSettings defaultSessionSettings;
 		if ( !XR_UNQUALIFIED_SUCCESS( InitSession( defaultSessionSettings ) ) )
-			return EXIT_FAILURE;
+            #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+            #else
+            return EXIT_FAILURE;
+            #endif
 
-		// ()
 
-		// (5) Initialize FB Passthrough
+		// (4) Initialize FB Passthrough
 		if ( GetPassthrough() )
 		{
-			// (5.1) Initialize passthrough
+			// (4.1) Initialize passthrough
 			if ( !XR_UNQUALIFIED_SUCCESS( InitPassthrough() ) )
-				return EXIT_FAILURE;
+            #ifdef XR_USE_PLATFORM_ANDROID
+                return;
+            #else
+                return EXIT_FAILURE;
+            #endif
 
-			// (5.2) Create passthrough layer
+			// (4.2) Create passthrough layer
 			if ( !XR_UNQUALIFIED_SUCCESS(
 					 GetPassthrough()->AddLayer( GetSession()->GetXrSession(), ExtBase_Passthrough::ELayerType::FULLSCREEN, XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT, XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB ) ) )
-				return EXIT_FAILURE;
+                    #ifdef XR_USE_PLATFORM_ANDROID
+                    return;
+                    #else
+                    return EXIT_FAILURE;
+                    #endif
 		}
 
-		// (6) Initialize renderer
+		// (5) Initialize renderer
 		if ( !XR_UNQUALIFIED_SUCCESS( InitRender( { VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SRGB }, { VK_FORMAT_D24_UNORM_S8_UINT } ) ) )
-			return EXIT_FAILURE;
+            #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+            #else
+            return EXIT_FAILURE;
+            #endif
 
-		// (7) Create render pass
+		// (6) Create render pass
 		if ( !XR_UNQUALIFIED_SUCCESS( CreateMainRenderPass() ) )
-			return EXIT_FAILURE;
+            #ifdef XR_USE_PLATFORM_ANDROID
+            return;
+            #else
+            return EXIT_FAILURE;
+            #endif
 
-		// (8) Create graphics pipelines
+		// (7) Create graphics pipelines
 		CreateGraphicsPipelines();
 
-		// (9) Create vis masks
+		// (8) Create vis masks
 		CreateVismasks();
 
-		return EXIT_SUCCESS; 
+        #ifndef XR_USE_PLATFORM_ANDROID
+        return EXIT_SUCCESS;
+        #endif
 	}
 
 	void App::CreateGraphicsPipelines()
@@ -385,7 +410,7 @@ namespace app
 		return true;
 	}
 
-	void App::ActionCallback_SetControllerActive( SAction *pAction, uint32_t unActionStateIndex ) 
+	void App::ActionCallback_SetControllerActive( SAction *pAction, uint32_t unActionStateIndex ) const
 	{
 		bool bState = pAction->vecActionStates[ unActionStateIndex ].statePose.isActive;
 
@@ -455,8 +480,6 @@ namespace app
 						return;
 						break;
 					case ERenderMode::PBR:
-						gamestate.currentRenderMode = ERenderMode::Unlit;
-						break;
 					default:
 						gamestate.currentRenderMode = ERenderMode::Unlit;
 						break;
@@ -508,7 +531,7 @@ namespace app
 		if ( bState )
 		{	
 			// If sky is above, then fade out
-			if ( assets.pSky->instances[ 0 ].pose.position.y > ( skyanim.START_Y / 2 ) )
+			if ( assets.pSky->instances[ 0 ].pose.position.y > ( SkyAnimation::START_Y / 2 ) )
 			{
 				skyanim.StartAnimation( false, 0.02f );
 				if ( GetPassthrough() )
@@ -524,7 +547,7 @@ namespace app
 		}
 	}
 
-	void App::ActionHaptic( SAction *pAction, uint32_t unActionStateIndex ) 
+	void App::ActionHaptic( SAction *pAction, uint32_t unActionStateIndex ) const
 	{
 		if ( !pInput )
 			return;
