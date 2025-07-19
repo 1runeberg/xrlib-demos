@@ -377,5 +377,6 @@ MigrationBackup/
 .DS_Store
 
 # Exceptions
+!**/assets/bin/*
 !*.spv
 !LICENSE
