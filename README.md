@@ -1,5 +1,3 @@
-
-# xrlib demos
 # xrlib demos
 [![Windows](https://github.com/1runeberg/xrlib-demos/actions/workflows/windows_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/windows_builds.yml)
 [![Linux](https://github.com/1runeberg/xrlib-demos/actions/workflows/ubuntu_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/ubuntu_builds.yml)
