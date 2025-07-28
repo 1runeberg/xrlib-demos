@@ -15,7 +15,8 @@
 #include <memory>
 
 #include <xrlib.hpp>
-#include <xrlib/ext/KHR/visibility_mask.hpp> // Stencil out portions of the eye textrures that will never be visible to the user
+#include <xrlib/ext/system_properties.hpp>			// Provides system property/hardware inspection capabilities
+#include <xrlib/ext/KHR/visibility_mask.hpp> 		// Stencil out portions of the eye textures that will never be visible to the user
 #include <xrlib/ext/EXT/hand_tracking.hpp>			// Handle hand tracking
 #include <xrlib/ext/FB/passthrough.hpp>				// Handle pass through
 #include <xrlib/ext/FB/triangle_mesh.hpp>			// Handle pass through - for projecting passthrough feed to a mesh
@@ -72,7 +73,15 @@ namespace xrapp
 			const uint32_t unTextureFaceCount = 1, 
 			const uint32_t unTextureMipCount = 1 );
 
-		XrResult InitHandTracking( void *pOtherInfo = nullptr );
+		XrResult InitHandTracking( void *pNextLeft, void *pNextRight );
+
+		XrResult InitHandTracking( XrHandJointSetEXT leftHandJointSet, XrHandJointSetEXT rightHandJointSet );
+
+		XrResult InitHandTracking( XrHandJointSetEXT leftHandJointSet = XR_HAND_JOINT_SET_DEFAULT_EXT,
+								   void *pNextLeft = nullptr,
+								   XrHandJointSetEXT rightHandJointSet = XR_HAND_JOINT_SET_DEFAULT_EXT,
+								   void *pNextRight = nullptr );
+
 		XrResult InitPassthrough( void* pOtherInfo = nullptr );
 
 		XrResult CreateMainRenderPass();

@@ -50,13 +50,8 @@ namespace xrapp
 		XR_RETURN_ON_ERROR( m_pXrInstance->RemoveUnsupportedExtensions( vecExtensions ) );
 		XR_RETURN_ON_ERROR( m_pXrInstance->RemoveUnsupportedApiLayers( vecApiLayers ) );
 
-		// Initialize OpenXR session
+		// Initialize OpenXR instance
 		XR_RETURN_ON_ERROR( m_pXrInstance->Init( vecExtensions, vecApiLayers, createFlags, pNext ) );
-
-#ifdef XR_USE_PLATFORM_ANDROID
-		// For android, we need to pass the android state management function to the xrProvider
-		m_pXrInstance->GetAndroidApp()->onAppCmd = app_handle_cmd;
-#endif
 
 		return XR_SUCCESS;
 	}
@@ -80,9 +75,11 @@ namespace xrapp
 		if ( m_pXrInstance->IsExtensionEnabled( XR_FB_PASSTHROUGH_EXTENSION_NAME ) )
 		{
 			m_pPassthrough = std::make_unique< FB::CPassthrough >( m_pXrInstance->GetXrInstance() );
+		}
 
-			if ( m_pXrInstance->IsExtensionEnabled( XR_FB_TRIANGLE_MESH_EXTENSION_NAME ) )
-			    m_pTriangleMesh = std::make_unique< FB::CTriangleMesh >( m_pXrInstance->GetXrInstance() );
+		if ( m_pXrInstance->IsExtensionEnabled( XR_FB_TRIANGLE_MESH_EXTENSION_NAME ) )
+		{
+			m_pTriangleMesh = std::make_unique< FB::CTriangleMesh >( m_pXrInstance->GetXrInstance() );
 		}
 
 		if ( m_pXrInstance->IsExtensionEnabled( XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME ) )
@@ -126,13 +123,33 @@ namespace xrapp
 		return XR_SUCCESS;
 	}
 
-	XrResult XrApp::InitHandTracking( void *pOtherInfo ) 
-	{ 
+	XrResult XrApp::InitHandTracking( XrHandJointSetEXT leftHandJointSet, XrHandJointSetEXT rightHandJointSet )
+	{
 		if ( !m_pHandTracking )
 			return XR_ERROR_FEATURE_UNSUPPORTED;
 
-		return m_pHandTracking->Init( m_pXrSession->GetXrSession() ); 
+		return InitHandTracking( leftHandJointSet, nullptr, rightHandJointSet, nullptr );
 	}
+
+	XrResult XrApp::InitHandTracking( void *pNextLeft, void *pNextRight )
+	{
+		if ( !m_pHandTracking )
+			return XR_ERROR_FEATURE_UNSUPPORTED;
+
+		return InitHandTracking( XR_HAND_JOINT_SET_DEFAULT_EXT, pNextLeft, XR_HAND_JOINT_SET_DEFAULT_EXT, pNextRight );
+	}
+
+	XrResult XrApp::InitHandTracking( XrHandJointSetEXT leftHandJointSet,
+									  void *pNextLeft,
+									  XrHandJointSetEXT rightHandJointSet,
+									  void *pNextRight )
+	{
+		if ( !m_pHandTracking )
+			return XR_ERROR_FEATURE_UNSUPPORTED;
+
+		return m_pHandTracking->Init( m_pXrSession->GetXrSession(), leftHandJointSet, pNextLeft, rightHandJointSet, pNextRight );
+	}
+
 
 	XrResult XrApp::InitPassthrough( void *pOtherInfo )
 	{ 

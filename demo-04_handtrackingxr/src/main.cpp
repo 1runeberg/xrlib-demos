@@ -29,6 +29,11 @@ void android_main( struct android_app *pAndroidApp )
 
     // (2) Initialize app
     pApp->Init();
+    if( !pApp->GetInstance() ||
+        !pApp->GetSession() ||
+        pApp->GetInstance()->GetXrInstance() == XR_NULL_HANDLE ||
+        pApp->GetSession()->GetXrSession() == XR_NULL_HANDLE )
+        return xrlib::ExitApp( pAndroidApp );
 
 #else
 int main( int argc, char *argv[] )
@@ -37,21 +42,29 @@ int main( int argc, char *argv[] )
 	std::unique_ptr< App > pApp = std::make_unique< App >( argc, argv, APP_NAME, XR_MAKE_VERSION32( 1, 0, 0 ), ELogLevel::LogVerbose );
 
     // (2) Initialize app
-	int result = pApp->Init();
-	if ( result == EXIT_FAILURE )
-		return result;
+	if ( pApp->Init() == EXIT_FAILURE )
+		return EXIT_FAILURE;
 #endif
 
-	// (3) Initialize hand tracking
-	std::unique_ptr< EXT::CHandTracking > pHandtracking = nullptr;
-	EXT::CHandTracking::SJointLocations jointLocations;
-	if ( pApp->GetInstance()->IsExtensionEnabled( XR_EXT_HAND_TRACKING_EXTENSION_NAME ) )
+	// (3) Check and Initialize hand tracking
+	if ( !pApp->GetInstance()->IsExtensionEnabled( XR_EXT_HAND_TRACKING_EXTENSION_NAME ) )
 	{
-		pHandtracking = std::make_unique< EXT::CHandTracking >( pApp->GetInstance()->GetXrInstance() );
-		
-		if ( !XR_UNQUALIFIED_SUCCESS( pHandtracking->Init( pApp->GetSession()->GetXrSession() ) ) )
-			pHandtracking.reset();
-	}
+        LogError( APP_NAME, "EXT hand tracking extension is not enabled. This demo requires it." );
+        #ifdef XR_USE_PLATFORM_ANDROID
+            return xrlib::ExitApp( pAndroidApp );
+        #else
+            return xrlib::ExitApp( EXIT_FAILURE );
+        #endif
+    }
+
+    std::unique_ptr< EXT::CHandTracking > pHandtracking = std::make_unique< EXT::CHandTracking >( pApp->GetInstance()->GetXrInstance() );;
+    EXT::CHandTracking::SJointLocations jointLocations;
+    if ( !XR_UNQUALIFIED_SUCCESS( pHandtracking->Init( pApp->GetSession()->GetXrSession() ) ) )
+        #ifdef XR_USE_PLATFORM_ANDROID
+            return xrlib::ExitApp( pAndroidApp );
+        #else
+            return xrlib::ExitApp( EXIT_FAILURE );
+        #endif
 
 	// (4) Setup scene
 	pApp->SetupScene();
@@ -137,10 +150,9 @@ int main( int argc, char *argv[] )
 
 	// (14) Exit app - xrlib objects (instance, session, renderer, etc) handles proper cleanup once unique pointers goes out of scope.
 	//				  Note that as they are in the same scope in this demo, order of destruction here is automatically enforced only when using C++20 and above
-    #ifndef XR_USE_PLATFORM_ANDROID
-    std::cout << "\n\nPress enter to end.";
-    std::cin.get();
-
-    return EXIT_SUCCESS;
+    #ifdef XR_USE_PLATFORM_ANDROID
+        return xrlib::ExitApp( pAndroidApp );
+    #else
+        return xrlib::ExitApp( EXIT_FAILURE );
     #endif
 }
