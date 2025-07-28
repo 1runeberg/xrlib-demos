@@ -1,8 +1,9 @@
 
 # xrlib demos
-[![Windows](https://img.shields.io/github/actions/workflow/status/1runeberg/xrlib-demos/build_demos.yml?branch=main&label=Windows&logo=windows)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-windows)
-[![Linux](https://img.shields.io/github/actions/workflow/status/1runeberg/xrlib-demos/build_demos.yml?branch=main&label=Linux&logo=linux)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-linux)
-[![Android](https://img.shields.io/github/actions/workflow/status/1runeberg/xrlib-demos/build_demos.yml?branch=main&label=Android&logo=android)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-android)
+# xrlib demos
+[![Windows](https://github.com/1runeberg/xrlib-demos/actions/workflows/windows_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/windows_builds.yml)
+[![Linux](https://github.com/1runeberg/xrlib-demos/actions/workflows/ubuntu_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/ubuntu_builds.yml)
+[![Android](https://github.com/1runeberg/xrlib-demos/actions/workflows/android_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/android_builds.yml)
 
 A collection of demo applications showcasing the features and capabilities of the [xrlib OpenXR wrapper library](https://github.com/1runeberg/xrlib). These demos are designed to highlight a wide range of functionality, including basic runtime queries, input handling, and advanced multi-threading and rendering techniques.
 
