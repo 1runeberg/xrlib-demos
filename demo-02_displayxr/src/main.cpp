@@ -25,7 +25,6 @@ using namespace xrlib;
 /// the active openxr runtime.
 
 #ifdef XR_USE_PLATFORM_ANDROID
-
 	void android_main( struct android_app *pAndroidApp )
 	{
 		// (1a) Create an xr instance, we'll leave the optional log level parameter to verbose.
@@ -33,7 +32,7 @@ using namespace xrlib;
 
         // (1b) Initialize android openxr loader
         if ( !XR_UNQUALIFIED_SUCCESS( pXrInstance->InitAndroidLoader( pAndroidApp ) ) )
-            return;
+            return xrlib::ExitApp( pAndroidApp );
 #else
 	int main( int argc, char *argv[] )
 	{
@@ -54,9 +53,9 @@ using namespace xrlib;
 
 		if( !XR_UNQUALIFIED_SUCCESS( pXrInstance->RemoveUnsupportedExtensions(vecRequiredExtensions) ) )
         #ifdef XR_USE_PLATFORM_ANDROID
-            return;
+            return xrlib::ExitApp( pAndroidApp );
         #else
-            return EXIT_FAILURE;
+            return xrlib::ExitApp( EXIT_FAILURE );
         #endif
 
 		if ( vecRequiredExtensions.size() != vecRequiredExtensions.size() )
@@ -66,37 +65,34 @@ using namespace xrlib;
 				std::cout << ext << std::endl;
 
             #ifdef XR_USE_PLATFORM_ANDROID
-                return;
+                return xrlib::ExitApp( pAndroidApp );
             #else
-                return EXIT_FAILURE;
+                return xrlib::ExitApp( EXIT_FAILURE );
             #endif
 		}
 		
 		// (4) Now we're ready to initialize an openxr instance
 		std::vector< const char * > vecAPILayers;
 		if( !XR_UNQUALIFIED_SUCCESS( pXrInstance->Init( vecRequiredExtensions, vecAPILayers , 0, nullptr ) ) )
-
         #ifdef XR_USE_PLATFORM_ANDROID
-            return;
+            return xrlib::ExitApp( pAndroidApp );
         #else
-            return EXIT_FAILURE;
+            return xrlib::ExitApp( EXIT_FAILURE );
         #endif
 
-
-#ifdef XR_USE_PLATFORM_ANDROID
-		// For android, we need to pass the android state management function to the xrProvider
+        #ifdef XR_USE_PLATFORM_ANDROID
+		// For android, we need to pass in addition the android state management function to the xrProvider
         pAndroidApp->onAppCmd = app_handle_cmd;
-#endif
+        #endif
 
 		// (5) Create and initialize openxr session
 		std::unique_ptr< CSession > pXrSession = std::make_unique< CSession >( pXrInstance.get() );
 		SSessionSettings defaultSessionSettings;
 		if( !XR_UNQUALIFIED_SUCCESS( pXrSession->Init( defaultSessionSettings ) ) )
-
         #ifdef XR_USE_PLATFORM_ANDROID
-            return;
+            return xrlib::ExitApp( pAndroidApp );
         #else
-            return EXIT_FAILURE;
+            return xrlib::ExitApp( EXIT_FAILURE );
         #endif
 
 		// (6) Handle extensions
@@ -115,9 +111,9 @@ using namespace xrlib;
 			// Our app's needed texture formats aren't supported.
             LogError( "xrlib", "FATAL: Current openxr runtime does not support the texture formats required by this app." );
             #ifdef XR_USE_PLATFORM_ANDROID
-            return;
+                return xrlib::ExitApp( pAndroidApp );
             #else
-            return EXIT_FAILURE;
+                return xrlib::ExitApp( EXIT_FAILURE );
             #endif
 		}
 
@@ -287,10 +283,9 @@ using namespace xrlib;
 
 		// (13) Exit app - xrlib objects (instance, session, renderer, etc) handles proper cleanup once unique pointers goes out of scope.
 		//				  Note that as they are in the same scope in this demo, order of destruction here is automatically enforced only when using C++20 and above
-        #ifndef XR_USE_PLATFORM_ANDROID
-		std::cout << "\n\nPress enter to end.";
-		std::cin.get();
-
-        return EXIT_SUCCESS;
+        #ifdef XR_USE_PLATFORM_ANDROID
+            return xrlib::ExitApp( pAndroidApp );
+        #else
+            return xrlib::ExitApp( EXIT_FAILURE );
         #endif
 	}

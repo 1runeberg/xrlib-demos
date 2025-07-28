@@ -22,15 +22,20 @@ static const float k_bladeScaleHapticThreshold = 0.035f;
 #ifdef XR_USE_PLATFORM_ANDROID
 void android_main( struct android_app *pAndroidApp )
 {
-	// (1) Create App
-	std::unique_ptr< App > pApp = std::make_unique< App >( 
-		pAndroidApp, 
-		APP_NAME,
-		XR_MAKE_VERSION32( 1, 0, 0 ), 
-		ELogLevel::LogVerbose );
+    // (1) Create App
+    std::unique_ptr< App > pApp = std::make_unique< App >(
+            pAndroidApp,
+            APP_NAME,
+            XR_MAKE_VERSION32( 1, 0, 0 ),
+            ELogLevel::LogVerbose );
 
     // (2) Initialize app
     pApp->Init();
+    if( !pApp->GetInstance() ||
+        !pApp->GetSession() ||
+        pApp->GetInstance()->GetXrInstance() == XR_NULL_HANDLE ||
+        pApp->GetSession()->GetXrSession() == XR_NULL_HANDLE )
+        return xrlib::ExitApp( pAndroidApp );
 
 #else
 int main( int argc, char *argv[] )
@@ -39,9 +44,8 @@ int main( int argc, char *argv[] )
 	std::unique_ptr< App > pApp = std::make_unique< App >( argc, argv, APP_NAME, XR_MAKE_VERSION32( 1, 0, 0 ), ELogLevel::LogVerbose );
 
     // (2) Initialize app
-	int result = pApp->Init();
-	if ( result == EXIT_FAILURE )
-		return result;
+	if ( pApp->Init() == EXIT_FAILURE )
+		return xrlib::ExitApp( EXIT_FAILURE );
 #endif
 
 	// (3) Setup scene
@@ -57,8 +61,10 @@ int main( int argc, char *argv[] )
 	if ( !pInput )
 	{
 		LogError( APP_NAME, "Error creating input module." );
-        #ifndef XR_USE_PLATFORM_ANDROID
-                return XR_ERROR_INITIALIZATION_FAILED;
+        #ifdef XR_USE_PLATFORM_ANDROID
+            return xrlib::ExitApp( pAndroidApp );
+        #else
+            return xrlib::ExitApp( EXIT_FAILURE );
         #endif
 	}
 
@@ -132,7 +138,14 @@ int main( int argc, char *argv[] )
 	// (4.6) Suggest bindings to the active openxr runtime
 	//        As with adding bindings, you can also suggest bindings manually per controller
 	//        e.g. controllerIndex.SuggestBindings(...)
-	pInput->SuggestBindings( &baseController, nullptr );
+    if ( !XR_SUCCEEDED( pInput->SuggestBindings( &baseController, nullptr )) )
+    {
+        #ifdef XR_USE_PLATFORM_ANDROID
+            return xrlib::ExitApp( pAndroidApp );
+        #else
+            return xrlib::ExitApp( EXIT_FAILURE );
+        #endif
+    }
 
 	std::vector< XrActionSet > vecActionSets = { actionsetMain.xrActionSetHandle };
 	pInput->AttachActionSetsToSession( vecActionSets.data(), static_cast< uint32_t >( vecActionSets.size() ) );
@@ -177,16 +190,11 @@ int main( int argc, char *argv[] )
 		CThreadPool *pThreadPool = pApp->pThreadPool.get();
 
 		// (5.4) Input Frame
-		if ( pInput )
-		{
-			pThreadPool->SubmitInputTask( [ pInput = pInput ]() { pInput->ProcessInput(); } ).get();
-
-			if ( pApp->assets.pBladeLeft->instances[ 0 ].scale.z > k_bladeScaleHapticThreshold )
-				pApp->ActionHaptic( &actionHaptic, 0 );
-
-			if ( pApp->assets.pBladeRight->instances[ 0 ].scale.z > k_bladeScaleHapticThreshold )
-				pApp->ActionHaptic( &actionHaptic, 1 );
-		}
+		pThreadPool->SubmitInputTask( [ pInput = pInput ]() { pInput->ProcessInput(); } ).get();
+		if ( pApp->assets.pBladeLeft->instances[ 0 ].scale.z > k_bladeScaleHapticThreshold )
+			pApp->ActionHaptic( &actionHaptic, 0 );
+		if ( pApp->assets.pBladeRight->instances[ 0 ].scale.z > k_bladeScaleHapticThreshold )
+			pApp->ActionHaptic( &actionHaptic, 1 );
 
 		// (5.5) Render frame
 		bool bFrameStarted = pThreadPool->SubmitRenderTask( [ pApp = pApp.get() ]() { return pApp->StartRenderFrame(); } ).get();
@@ -227,10 +235,9 @@ int main( int argc, char *argv[] )
 
 	// (6) Exit app - xrlib objects (instance, session, renderer, etc) handles proper cleanup once unique pointers goes out of scope.
 	//				  Note that as they are in the same scope in this demo, order of destruction here is automatically enforced only when using C++20 and above
-    #ifndef XR_USE_PLATFORM_ANDROID
-    std::cout << "\n\nPress enter to end.";
-    std::cin.get();
-
-    return EXIT_SUCCESS;
+    #ifdef XR_USE_PLATFORM_ANDROID
+        return xrlib::ExitApp( pAndroidApp );
+    #else
+        return xrlib::ExitApp( EXIT_FAILURE );
     #endif
 }

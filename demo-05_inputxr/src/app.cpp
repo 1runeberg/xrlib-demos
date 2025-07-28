@@ -333,7 +333,9 @@ namespace app
 			{
 				pRenderInfo->state.compositionLayerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT | XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT | XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT;
 				pRenderInfo->state.clearValues[ 0 ].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
-				GetPassthrough()->GetCompositionLayers( pRenderInfo->state.preAppFrameLayers );
+
+                if( pRenderInfo->state.preAppFrameLayers.empty() )
+				    GetPassthrough()->GetCompositionLayers( pRenderInfo->state.preAppFrameLayers, false );
 			}
 			else
 			{

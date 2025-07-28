@@ -19,7 +19,7 @@ set(CMAKE_SUPPRESS_REGENERATION true)
 ######################
 
 # Set project variables
-project("xrlib_demos" VERSION 1.1.0)
+project("xrlib_demos" VERSION 1.2.0)
 
 # Set config files
 # Set CI files
@@ -84,6 +84,7 @@ set(DEMOS
         "demo-03_passthroughxr"
 	    "demo-04_handtrackingxr"
         "demo-05_inputxr"
+        "demo-06_interactionsxr"
     )
 
 # Add all demos to project
@@ -99,6 +100,6 @@ endif()
 
 # Set startup app
 if(MSVC)
-    set_property (DIRECTORY PROPERTY VS_STARTUP_PROJECT "inputxr")
-    message("Startup project for VS set to: inputxr")
+    set_property (DIRECTORY PROPERTY VS_STARTUP_PROJECT "interactionsxr")
+    message("Startup project for VS set to: interactionsxr")
 endif()
