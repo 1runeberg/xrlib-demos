@@ -1,6 +1,6 @@
 # demo-06_interactionsxr
 
-[![Demo video](https://img.youtube.com/vi/gKtBfLZGCbk/hqdefault.jpg)](https://youtu.be/gKtBfLZGCbk)
+[![Demo video](https://img.youtube.com/vi/SY8_EadeGvI/hqdefault.jpg)](https://youtu.be/SY8_EadeGvI)
 
 ## EXT Hand Interaction extension demo using [xrlib](https://github.com/1runeberg/xrlib), optionally the following:
  - Mesh projection passthrough (via fb triangle mesh)

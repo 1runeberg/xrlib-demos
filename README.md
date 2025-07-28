@@ -1,8 +1,8 @@
 
 # xrlib demos
-[![windows-latest](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml/badge.svg?job=build-windows)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-windows)
-[![ubuntu-latest](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml/badge.svg?job=build-linux)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-linux)
-[![android-latest](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml/badge.svg?job=build-android)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-android)
+[![Windows](https://img.shields.io/github/actions/workflow/status/1runeberg/xrlib-demos/build_demos.yml?branch=main&label=Windows&logo=windows)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-windows)
+[![Linux](https://img.shields.io/github/actions/workflow/status/1runeberg/xrlib-demos/build_demos.yml?branch=main&label=Linux&logo=linux)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-linux)
+[![Android](https://img.shields.io/github/actions/workflow/status/1runeberg/xrlib-demos/build_demos.yml?branch=main&label=Android&logo=android)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-android)
 
 A collection of demo applications showcasing the features and capabilities of the [xrlib OpenXR wrapper library](https://github.com/1runeberg/xrlib). These demos are designed to highlight a wide range of functionality, including basic runtime queries, input handling, and advanced multi-threading and rendering techniques.
 
@@ -42,7 +42,7 @@ The repository also includes a base class for XR applications (xrapp). This base
    - Demonstrates xrlib thread pool manager for multithreading
    - Showcases best practices for XR input management
 
-6. [**demo-06_interactionsxr**](https://github.com/1runeberg/xrlib-demos/tree/main/demo-06_interactionshxr)
+6. [**demo-06_interactionsxr**](https://github.com/1runeberg/xrlib-demos/tree/main/demo-06_interactionsxr)
  - Hand interactions demo (ext)
  - Mesh projection passthrough (via fb triangle mesh)
  - Simultaneous hands and controllers (meta)
