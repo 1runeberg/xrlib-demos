@@ -1,0 +1,45 @@
+name: Windows
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        build_type: [Release, Debug]
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: windows-${{ matrix.build_type }}-clang
+          
+      - name: Prepare Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@main
+        with:
+          vulkan-query-version: 1.3.204.0
+          vulkan-components: Vulkan-Headers, Vulkan-Loader
+          vulkan-use-cache: true
+          
+      - name: Configure CMake
+        shell: cmd
+        run: |
+          cmake -B ${{ github.workspace }}/build ^
+                -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} ^
+                -D BUILD_SHADERS=OFF ^
+                -D ENABLE_XRVK=ON ^
+                -S ${{ github.workspace }}
+        
+      - name: Build
+        run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
+        
