@@ -1,5 +1,9 @@
 
 # xrlib demos
+[![windows-latest](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml/badge.svg?job=build-windows)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-windows)
+[![ubuntu-latest](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml/badge.svg?job=build-linux)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-linux)
+[![android-latest](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml/badge.svg?job=build-android)](https://github.com/1runeberg/xrlib-demos/actions/workflows/build_demos.yml?query=workflow%3Abuild-android)
+
 A collection of demo applications showcasing the features and capabilities of the [xrlib OpenXR wrapper library](https://github.com/1runeberg/xrlib). These demos are designed to highlight a wide range of functionality, including basic runtime queries, input handling, and advanced multi-threading and rendering techniques.
 
 The repository also includes a base class for XR applications (xrapp). This base class serves as a foundation for building XR applications, streamlining development by integrating the xrlib library and renderer.
@@ -38,6 +42,11 @@ The repository also includes a base class for XR applications (xrapp). This base
    - Demonstrates xrlib thread pool manager for multithreading
    - Showcases best practices for XR input management
 
+6. [**demo-06_interactionsxr**](https://github.com/1runeberg/xrlib-demos/tree/main/demo-06_interactionshxr)
+ - Hand interactions demo (ext)
+ - Mesh projection passthrough (via fb triangle mesh)
+ - Simultaneous hands and controllers (meta)
+ - Use System Properties helper to probe openxr runtime system/hardware capabilities
  
 ## Building
 
