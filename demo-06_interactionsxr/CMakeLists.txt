@@ -251,7 +251,7 @@ add_custom_command(
                     COMMAND ${CMAKE_COMMAND} -E make_directory "${APP_BIN_OUT}"
 
                     # Copy app assets to out binary directory
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory "${APP_ASSETS}" "${APP_BIN_OUT}"
+                    #COMMAND ${CMAKE_COMMAND} -E copy_directory "${APP_ASSETS}" "${APP_BIN_OUT}"
 
                     # copy xrlib to out binary directory
                     COMMAND ${CMAKE_COMMAND} -E copy_directory "${XRLIB_BIN_OUT}" "${APP_BIN_OUT}"

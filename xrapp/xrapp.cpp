@@ -23,6 +23,7 @@ namespace xrapp
 	{
 		// Create thread pool
 		pThreadPool = std::make_unique< CThreadPool >( pAndroidApp->activity->vm ); // Will use optimal number of worker threads - starts with 1 and dynamically increases to max as needed
+		LogDebug( "XrApp::XrApp", "Created xrapp thread pool with: %zu worker threads, 1 main thread and 1 system thread.", CThreadPool::GetOptimalWorkerThreadCount() );
 
 		// Create an xr instance, we'll leave the optional log level parameter to verbose.
 		m_pXrInstance = std::make_unique< CInstance >( pAndroidApp, sAppName, unAppVersion, eMinLogLevel );
@@ -395,7 +396,7 @@ namespace xrapp
 
 	}
 
-	void XrApp::ParallelLoadMeshes( std::vector< SMeshInfo > meshes ) 
+	void XrApp::ParallelLoadMeshes( const std::vector< SMeshInfo > meshes )
 	{
 		assert( pThreadPool && !meshes.empty() );
 
@@ -435,8 +436,8 @@ namespace xrapp
 		}
 
 		auto end = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast< std::chrono::seconds >( end - start );
-		LogInfo( m_pXrInstance->GetAppName(), "All meshes loaded. Time elapsed: %" PRIu64 " seconds", duration.count() );
+		std::chrono::duration< double > duration = end - start;
+		LogInfo( m_pXrInstance->GetAppName(), "All meshes loaded. Time elapsed: %.4f seconds", duration.count() );
 
 		// Parse models 
 		start = std::chrono::high_resolution_clock::now();
@@ -448,8 +449,8 @@ namespace xrapp
 		}
 
 		end = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast< std::chrono::seconds >( end - start );
-		LogInfo( m_pXrInstance->GetAppName(), "All models parsed. Time elapsed: %" PRIu64 " seconds", duration.count() );
+		duration = end - start;
+		LogInfo( m_pXrInstance->GetAppName(), "All models parsed. Time elapsed: %.4f seconds", duration.count() );
 
 		#ifdef XR_USE_PLATFORM_ANDROID
 		// For android, force garbage collection via thread pool as it takes quite a bit of time in this platform
@@ -466,6 +467,35 @@ namespace xrapp
 			cleanupFutures.push_back( std::move( cleanupFuture ) );
 		}
 		#endif
+	}
+
+	void XrApp::ParallelLoadMaterials( const std::vector< SLoadMaterialInfo > materialInfos )
+	{
+		assert( pThreadPool && !materialInfos.empty() );
+
+		std::vector< std::future< void > > futures;
+		futures.reserve( materialInfos.size() );
+
+		auto start = std::chrono::high_resolution_clock::now();
+		LogInfo( m_pXrInstance->GetAppName(), "Parallel loading materials started. Please wait..." );
+
+		for ( auto &materialInfo : materialInfos )
+		{
+			auto future = pThreadPool->SubmitTask(
+				[ &materialInfo, pRenderInfo = pRenderInfo.get(), pTextureManager = pTextureManager.get() ]()
+				{
+					if ( materialInfo.pRenderModel )
+						materialInfo.pRenderModel->LoadMaterial( pRenderInfo, materialInfo.descriptorLayout, materialInfo.descriptorPool, pTextureManager );
+				} );
+			futures.push_back( std::move( future ) );
+		}
+
+		for ( auto &future : futures )
+			future.wait();
+
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration< double > duration = end - start;
+		LogInfo( m_pXrInstance->GetAppName(), "All materials loaded. Time elapsed: %.4f seconds", duration.count() );
 	}
 
 } // namespace xrapp
