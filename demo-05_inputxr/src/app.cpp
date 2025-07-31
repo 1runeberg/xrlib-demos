@@ -91,7 +91,7 @@ namespace app
 		}
 
 		// (5) Initialize renderer
-		if ( !XR_UNQUALIFIED_SUCCESS( InitRender( { VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SRGB }, { VK_FORMAT_D24_UNORM_S8_UINT } ) ) )
+		if ( !XR_UNQUALIFIED_SUCCESS( InitRender( { VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SRGB }, { VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT } ) ) )
             #ifdef XR_USE_PLATFORM_ANDROID
             return;
             #else
@@ -259,8 +259,8 @@ namespace app
 		ParallelLoadMeshes( { 
 			{ .pRenderModel = assets.pSky, .sFilename = "plane.glb", .scale = { 5000.0f, 1.f, 5000.0f } },
 			{ .pRenderModel = assets.pFloor, .sFilename = "plane.glb", .scale = { 5.0f, 1.f, 5.0f } },
-			{ .pRenderModel = assets.pHiltLeft, .sFilename = "Saber/hilt.glb", .scale = { 0.04f, 0.04f, 0.04f } },
-			{ .pRenderModel = assets.pHiltRight, .sFilename = "Saber/hilt.glb", .scale = { 0.04f, 0.04f, 0.04f } },
+			{ .pRenderModel = assets.pHiltLeft, .sFilename = "Saber/hilt/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f } },
+			{ .pRenderModel = assets.pHiltRight, .sFilename = "Saber/hilt/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f } },
 			{ .pRenderModel = assets.pBladeLeft, .sFilename = "Saber/blade.glb", .scale = { 0.04f, 0.04f, 0.04f } },
 			{ .pRenderModel = assets.pBladeRight, .sFilename = "Saber/blade.glb", .scale = { 0.04f, 0.04f, 0.04f } },
 			{ .pRenderModel = assets.pButtonBottomLeft, .sFilename = "Saber/btnbottom.glb", .scale = { 0.04f, 0.04f, 0.04f } },
@@ -272,14 +272,16 @@ namespace app
 		// (4) Define and load materials for each mesh
 
 		// load materials for meshes where we don't need to update any material variables (scene lighting is always dynamic)
-		assets.pHiltLeft->LoadMaterial( pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, pipelines.pbrFragmentDescriptorPool, pTextureManager.get() );
-		assets.pHiltRight->LoadMaterial( pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, pipelines.pbrFragmentDescriptorPool, pTextureManager.get() );
-		assets.pButtonBottomLeft->LoadMaterial( pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, pipelines.pbrFragmentDescriptorPool, pTextureManager.get() );
-		assets.pButtonTopLeft->LoadMaterial( pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, pipelines.pbrFragmentDescriptorPool, pTextureManager.get() );
-		assets.pButtonBottomRight->LoadMaterial( pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, pipelines.pbrFragmentDescriptorPool, pTextureManager.get() );
-		assets.pButtonTopRight->LoadMaterial( pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, pipelines.pbrFragmentDescriptorPool, pTextureManager.get() );
+		ParallelLoadMaterials( {
+			{ .pRenderModel = assets.pHiltLeft, .descriptorLayout = pipelines.pbrFragmentDescriptorLayout, .descriptorPool = pipelines.pbrFragmentDescriptorPool },
+			{ .pRenderModel = assets.pHiltRight, .descriptorLayout = pipelines.pbrFragmentDescriptorLayout, .descriptorPool = pipelines.pbrFragmentDescriptorPool },
+			{ .pRenderModel = assets.pButtonBottomLeft, .descriptorLayout = pipelines.pbrFragmentDescriptorLayout, .descriptorPool = pipelines.pbrFragmentDescriptorPool },
+			{ .pRenderModel = assets.pButtonTopLeft, .descriptorLayout = pipelines.pbrFragmentDescriptorLayout, .descriptorPool = pipelines.pbrFragmentDescriptorPool },
+			{ .pRenderModel = assets.pButtonBottomRight, .descriptorLayout = pipelines.pbrFragmentDescriptorLayout, .descriptorPool = pipelines.pbrFragmentDescriptorPool },
+			{ .pRenderModel = assets.pButtonTopRight, .descriptorLayout = pipelines.pbrFragmentDescriptorLayout, .descriptorPool = pipelines.pbrFragmentDescriptorPool },
+		});
 
-		// load materials for meshes where we want dynamic updates to maerial variables
+		// load materials for meshes where we want dynamic updates to material variables
 		assets.pSky->LoadMaterial( gamestate.vecMaterialData, pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, pipelines.pbrFragmentDescriptorPool, pTextureManager.get() );
 		gamestate.skyMateriaDataId = gamestate.vecMaterialData.size() - 1;
 		gamestate.vecMaterialData[ gamestate.skyMateriaDataId ]->emissiveFactor[ 1 ] = 1.0f; // reset opacity value input for shader

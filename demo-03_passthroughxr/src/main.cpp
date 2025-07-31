@@ -98,7 +98,7 @@ int main( int argc, char *argv[] )
 	pPassthrough->Start();
 
 	// (8) Initialize renderer
-	if ( !XR_UNQUALIFIED_SUCCESS( pApp->InitRender( { VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SRGB }, { VK_FORMAT_D24_UNORM_S8_UINT } ) ) )
+	if ( !XR_UNQUALIFIED_SUCCESS( pApp->InitRender( { VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SRGB }, { VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT } ) ) )
         #ifdef XR_USE_PLATFORM_ANDROID
             return xrlib::ExitApp( pAndroidApp );
         #else

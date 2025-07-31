@@ -104,7 +104,7 @@ using namespace xrlib;
 
 		// (7) Set texture formats our app's renderer will use
 		VkFormat vkFormatColor = (VkFormat) pXrSession->SelectColorTextureFormat( { VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SRGB } );
-		VkFormat vkFormatDepth = (VkFormat) pXrSession->SelectDepthTextureFormat( { VK_FORMAT_D24_UNORM_S8_UINT } );
+		VkFormat vkFormatDepth = (VkFormat) pXrSession->SelectDepthTextureFormat( { VK_FORMAT_D24_UNORM_S8_UINT }, { VK_FORMAT_D32_SFLOAT_S8_UINT } );
 
 		if (vkFormatColor == 0 || vkFormatDepth == 0)
 		{

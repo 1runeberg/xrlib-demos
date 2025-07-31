@@ -41,6 +41,13 @@ namespace xrapp
 			XrVector3f scale = { 1.0f, 1.0f, 1.0f };
 		};
 
+		struct SLoadMaterialInfo
+		{
+			CRenderModel *pRenderModel = nullptr;
+			uint32_t descriptorLayout = 0;
+			uint32_t descriptorPool = 0;
+		};
+
 		#ifdef XR_USE_PLATFORM_ANDROID
 
 			XrApp(
@@ -98,8 +105,8 @@ namespace xrapp
 
 		void ActionCallback_Debug( SAction *pAction, uint32_t unActionStateIndex );
 
-		void ParallelLoadMeshes( std::vector< SMeshInfo > meshes );
-
+		void ParallelLoadMeshes( const std::vector< SMeshInfo > meshes );
+		void ParallelLoadMaterials( const std::vector< SLoadMaterialInfo > materialInfos );
 
 		CInstance *GetInstance() { return m_pXrInstance.get(); }
 		CSession *GetSession() { return m_pXrSession.get(); }
