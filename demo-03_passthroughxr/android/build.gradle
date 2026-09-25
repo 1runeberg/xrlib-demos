@@ -27,7 +27,7 @@ android {
 
     def cmakeArgs = "-DANDROID_PROJECT=demo-03_passthroughxr"     // This is used to filter compile for current app only if cmake builds multiple apps
     def cmakePath = "../../CMakeLists.txt"                  // Points to root github repository so xrlib is built along with the project
-    def cmakeMinVersion = "3.22.1"                          // xrlib min cmake version
+    def cmakeVersion = "3.30.5"                          // CMake version
 
     def appCompileSdk = 33
     def appMinSdkVersion = 31       // Minimum required by Meta.
@@ -113,7 +113,7 @@ android {
     externalNativeBuild {
         cmake {
             path = cmakePath
-            version = cmakeMinVersion
+            version = cmakeVersion
         }
     }
 

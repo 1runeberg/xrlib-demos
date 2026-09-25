@@ -3,7 +3,7 @@
 # Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
 set(CMAKE_SUPPRESS_REGENERATION true)
 
 

@@ -52,7 +52,7 @@ The repository also includes a base class for XR applications (xrapp). This base
 ### Prerequisites
 
 1. Required Tools
-    - CMake 3.22 or higher
+    - CMake 3.28 or higher
     - C++20 compatible compiler
     - Vulkan SDK (from [https://vulkan.lunarg.com/](https://vulkan.lunarg.com/))
     - xrlib (included as submodule)
@@ -93,6 +93,8 @@ The repository also includes a base class for XR applications (xrapp). This base
     ```
 
 ### Building Android Applications
+
+Install CMake 3.30.5 from Android Studio's SDK Manager under SDK Tools (Show Package Details).
 
 1. Open Android Studio Ladybug or newer
 2. Navigate to the `android` folder under any specific demo (e.g., `demo-01_checkxr/android`)

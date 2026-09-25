@@ -9,7 +9,7 @@
 # OpenXRProvider (v2): Released 2022 - https://github.com/1runeberg/OpenXRProvider_v2/
 # v1 & v2 licensed under MIT: https://opensource.org/license/mit
 
-cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
 set(CMAKE_SUPPRESS_REGENERATION true)
 
 
