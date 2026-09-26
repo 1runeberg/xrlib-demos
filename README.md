@@ -2,6 +2,7 @@
 [![Windows](https://github.com/1runeberg/xrlib-demos/actions/workflows/windows_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/windows_builds.yml)
 [![Linux](https://github.com/1runeberg/xrlib-demos/actions/workflows/ubuntu_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/ubuntu_builds.yml)
 [![Android](https://github.com/1runeberg/xrlib-demos/actions/workflows/android_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/android_builds.yml)
+[![SteamOS ARM64](https://github.com/1runeberg/xrlib-demos/actions/workflows/steamos_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/steamos_builds.yml)
 
 OpenXR demos using [xrlib](https://github.com/1runeberg/xrlib), covering runtime
 queries, rendering, passthrough, hand tracking and controller input.
