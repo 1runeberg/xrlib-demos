@@ -3,109 +3,120 @@
 [![Linux](https://github.com/1runeberg/xrlib-demos/actions/workflows/ubuntu_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/ubuntu_builds.yml)
 [![Android](https://github.com/1runeberg/xrlib-demos/actions/workflows/android_builds.yml/badge.svg)](https://github.com/1runeberg/xrlib-demos/actions/workflows/android_builds.yml)
 
-A collection of demo applications showcasing the features and capabilities of the [xrlib OpenXR wrapper library](https://github.com/1runeberg/xrlib). These demos are designed to highlight a wide range of functionality, including basic runtime queries, input handling, and advanced multi-threading and rendering techniques.
+OpenXR demos using [xrlib](https://github.com/1runeberg/xrlib), covering runtime
+queries, rendering, passthrough, hand tracking and controller input.
 
-The repository also includes a base class for XR applications (xrapp). This base class serves as a foundation for building XR applications, streamlining development by integrating the xrlib library and renderer.
+## Demos
 
-## Demo Applications
+- [demo-01_checkxr](demo-01_checkxr): query the active runtime, extensions, API layers and system capabilities
+- [demo-02_displayxr](demo-02_displayxr): render basic geometry with stereo views and tracked poses
+- [demo-03_passthroughxr](demo-03_passthroughxr): display passthrough using the FB passthrough extension
+- [demo-04_handtrackingxr](demo-04_handtrackingxr): display joint indicators for tracked hands
+- [demo-05_inputxr](demo-05_inputxr): control a saber with action bindings and haptics, with PBR rendering and optional passthrough
+- [demo-06_interactionsxr](demo-06_interactionsxr): use pinch and grasp actions, controller poses and mesh projection passthrough
 
-1. [**demo-01_checkxr**](https://github.com/1runeberg/xrlib-demos/tree/main/demo-01_checkxr) 
+[<img src="images/demo-05_inputxr_thumb.png" alt="inputxr" width="200" />](demo-05_inputxr)
 
-   - Demonstrates how to query the active OpenXR runtime
-   - Shows available extensions and API layers
-   - Displays runtime capabilities and system information
+Each demo's README describes its controls and features. Extension support depends
+on the device and OpenXR runtime. The shared application code lives in `xrapp/`.
 
-2. [**demo-02_displayxr**](https://github.com/1runeberg/xrlib-demos/tree/main/demo-02_displayxr) -
+## Get the demos
 
-   - Basic rendering demonstration using xrlib
-   - Shows fundamental setup for XR visualization
-   - Illustrates basic scene composition
+```sh
+git clone --recurse-submodules https://github.com/1runeberg/xrlib-demos.git
+cd xrlib-demos
+```
 
-3. [**demo-03_passthroughxr**](https://github.com/1runeberg/xrlib-demos/tree/main/demo-03_passthroughxr) 
-   - Showcases the Facebook Passthrough extension helper class
-   - Demonstrates mixed reality capabilities
-   - Examples of passthrough visualization configurations
+For an existing checkout, initialise the dependencies with:
 
-4. [**demo-04_handtrackingxr**](https://github.com/1runeberg/xrlib-demos/tree/main/demo-04_handtrackingxr) 
-   - Implementation of the hand tracking extension helper class
-   - Displays debug indicators matching user hand joints
-   - Shows hand pose detection and tracking
+```sh
+git submodule update --init --recursive
+```
 
-5. [**demo-05_inputxr**](https://github.com/1runeberg/xrlib-demos/tree/main/demo-05_inputxr)
+The demo builds include xrlib from the submodule automatically.
 
-   <img src="images/demo-05_inputxr_thumb.png" alt="inputxr" width="200" />
+## Windows and Linux
 
-   - Comprehensive demo highlighting input handling
-   - Advanced PBR (Physically Based Rendering) examples
-   - Implementation of the display refresh rate extension helper class
-   - Demonstrates xrlib thread pool manager for multithreading
-   - Showcases best practices for XR input management
+Requires Git, CMake 3.28 or newer, a C++20 compiler and the [Vulkan SDK](https://vulkan.lunarg.com/).
+Make sure `glslc` is on your `PATH` so the build can compile the demo shaders.
 
-6. [**demo-06_interactionsxr**](https://github.com/1runeberg/xrlib-demos/tree/main/demo-06_interactionsxr)
- - Hand interactions demo (ext)
- - Mesh projection passthrough (via fb triangle mesh)
- - Simultaneous hands and controllers (meta)
- - Use System Properties helper to probe openxr runtime system/hardware capabilities
- 
-## Building
+On Windows, install Visual Studio's Desktop development with C++ workload.
 
-### Prerequisites
+On Linux, install GCC or Clang and your hardware platform's development tools.
 
-1. Required Tools
-    - CMake 3.28 or higher
-    - C++20 compatible compiler
-    - Vulkan SDK (from [https://vulkan.lunarg.com/](https://vulkan.lunarg.com/))
-    - xrlib (included as submodule)
+Run these commands from the repo root to build all six demos.
 
-2. Platform-Specific Requirements
-    - Windows: Visual Studio 2019 or newer
-    - Linux: GCC 10+ or Clang 12+
-    - Android: 
-        - Android Studio Ladybug or newer
-        - Android NDK
-        - Android native app glue
+### Windows
 
-### Building Desktop Applications
+```sh
+cmake -S . -B build -A x64
+cmake --build build --config Release --parallel
+```
 
-1. Clone the Repository
-    ```bash
-    git clone [repository-url]
-    cd xrlib-demos
-    git submodule update --init --recursive
-    ```
+### Linux
 
-2. Configure and Build
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+```
 
-#### Windows
-    ```bash
-    mkdir build
-    cd build
-    cmake ..
-    cmake --build . --config Release
-    ```
+To build one demo after configuring, select its executable target, for example:
 
-#### Linux
-    ```bash
-    mkdir build
-    cd build
-    cmake ..
-    make
-    ```
+```sh
+cmake --build build --config Release --target displayxr --parallel
+```
 
-### Building Android Applications
+The targets are `checkxr`, `displayxr`, `passthroughxr`, `handtrackingxr`,
+`inputxr` and `interactionsxr`.
 
-Install CMake 3.30.5 from Android Studio's SDK Manager under SDK Tools (Show Package Details).
+Executables, libraries and runtime assets are
+copied into each demo's `bin/` folder.
 
-1. Open Android Studio Ladybug or newer
-2. Navigate to the `android` folder under any specific demo (e.g., `demo-01_checkxr/android`)
-3. Open the folder as an Android Studio project
-4. Build using Android Studio's build system
+### Run a demo
 
-## Output Locations
+Set up your device's OpenXR runtime, then run the executable from its `bin/`
+folder so it can find its assets. For displayxr on Linux:
 
-After successful build, you'll find the outputs in:
-- Desktop binaries: `./bin/`
-- Android APKs: In respective `android/app/build/outputs/apk` directories
+```sh
+cd demo-02_displayxr/bin
+./displayxr
+```
+
+On Windows, run `displayxr.exe` from the same folder. Checkxr prints runtime
+information to the console and exits without displaying an XR scene.
+
+## SteamOS ARM64
+
+Demos 01, 02 and 05 build as native Linux ARM64 apps for Steam Frame. From the
+repo root, with Docker running and Linux ARM64 support enabled:
+
+```sh
+docker build --platform linux/arm64 --target packages --output type=local,dest=. -f platforms/steamos/Dockerfile .
+```
+
+Packages are exported to `<demo>/build/steamos-arm64/deploy/`. See the
+[SteamOS build and deployment guide](platforms/steamos/README.md) for individual demo
+builds, building directly on Linux ARM64 and uploading to Frame.
+
+## Android
+
+Each demo has its own Android Studio project in `<demo>/android/`.
+
+1. Open the demo's `android` folder in Android Studio
+2. In SDK Manager, install Android SDK Platform 33, the NDK and CMake 3.30.5 under SDK Tools, using Show Package Details
+3. Use JDK 17 for Gradle, sync the project and build the APK
+4. Install and run it on an Android device with a compatible OpenXR runtime
+
+You can also build from the demo's Android folder:
+
+```sh
+cd demo-02_displayxr/android
+./gradlew assembleDebug
+```
+
+Use `gradlew.bat assembleDebug` on Windows. APKs are written to the demo's
+`android/build/outputs/apk/` folder.
+
 
 ## Links
 

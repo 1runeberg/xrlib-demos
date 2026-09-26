@@ -1,5 +1,5 @@
 # xrlib demos
-# Copyright 2024,2025 Copyright Rune Berg 
+# Copyright 2024-26 Rune Berg
 # https://github.com/1runeberg | http://runeberg.io | https://runeberg.social | https://www.youtube.com/@1RuneBerg
 # Licensed under Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0
 # SPDX-License-Identifier: Apache-2.0
@@ -11,6 +11,7 @@
 
 
 cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
+
 set(CMAKE_SUPPRESS_REGENERATION true)
 
 
@@ -20,6 +21,13 @@ set(CMAKE_SUPPRESS_REGENERATION true)
 
 # Set project variables
 project("xrlib_demos" VERSION 1.3.0)
+
+option(STEAMOS_ARM64 "Build demos 01, 02 and 05 for SteamOS ARM64" OFF)
+
+if(STEAMOS_ARM64)
+    include(cmake/steamos.cmake)
+    return()
+endif()
 
 # Set config files
 # Set CI files
@@ -62,13 +70,19 @@ set(ENABLE_RENDERDOC ${ENABLE_RENDERDOC} CACHE BOOL "Enable renderdoc for render
 set(ENABLE_VULKAN_DEBUG ${ENABLE_VULKAN_DEBUG} CACHE BOOL "Enable vulkan debugging" FORCE)
 
 # Add xrlib
-add_subdirectory("${XRLIB}")
+set(XRLIB_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/xrlib" CACHE PATH "xrlib source repo")
 
-set(XRLIB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/xrlib")
+add_subdirectory("${XRLIB_SOURCE}" "${CMAKE_CURRENT_BINARY_DIR}/xrlib")
+
+set(XRLIB_ROOT "${XRLIB_SOURCE}")
 set(XRLIB_INCLUDE "${XRLIB_ROOT}/include")
 set(XRLIB_RES "${XRLIB_ROOT}/res")
-set(XRLIB_BIN_OUT "${XRLIB_ROOT}/bin")
-set(XRLIB_LIB_OUT "${XRLIB_ROOT}/lib")
+if(NOT DEFINED XRLIB_BIN_OUT)
+    set(XRLIB_BIN_OUT "${XRLIB_ROOT}/bin")
+endif()
+if(NOT DEFINED XRLIB_LIB_OUT)
+    set(XRLIB_LIB_OUT "${XRLIB_ROOT}/lib")
+endif()
 set(XRLIB_THIRD_PARTY "${XRLIB_ROOT}/third_party")
 
 set(XRVK_SHADERS_BIN "${XRLIB_ROOT}/res/shaders/bin")

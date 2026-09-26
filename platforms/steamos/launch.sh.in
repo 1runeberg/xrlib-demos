@@ -1,0 +1,8 @@
+#!/bin/sh
+# Copyright 2026 Rune Berg
+# Licensed under Apache 2.0
+# SPDX-License-Identifier: Apache-2.0
+
+set -eu
+cd -- "$(dirname -- "$0")"
+exec ./@APP_NAME@ "$@"

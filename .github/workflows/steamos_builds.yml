@@ -1,6 +1,10 @@
 name: SteamOS ARM64
 
 on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
