@@ -1,5 +1,5 @@
 /* 
- * Copyright 2024,2025 Copyright Rune Berg 
+ * Copyright 2024-26 Rune Berg
  * https://github.com/1runeberg | http://runeberg.io | https://runeberg.social | https://www.youtube.com/@1RuneBerg
  * Licensed under Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0
  * SPDX-License-Identifier: Apache-2.0
@@ -46,6 +46,7 @@ namespace app
 		std::vector< const char * > vecRequiredExtensions = {
 			XR_KHR_VULKAN_ENABLE_EXTENSION_NAME,
 			XR_KHR_VISIBILITY_MASK_EXTENSION_NAME,
+			ValveFrame::k_pccExtensionName,
 			XR_FB_PASSTHROUGH_EXTENSION_NAME,	  // Passthrough extension our app will use
 			XR_FB_TRIANGLE_MESH_EXTENSION_NAME,	  // Optional, used to project to passthrough to a mesh, not shown in this demo
 			XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME // Display refresh rate for consistent animations across devices

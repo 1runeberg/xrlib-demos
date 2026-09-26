@@ -1,0 +1,14 @@
+**/.git
+**/.DS_Store
+**/__pycache__
+**/build
+**/cmake-build-*
+**/.cxx
+**/.gradle
+**/.idea
+**/.vscode
+**/android
+xrlib/bin
+xrlib/lib
+demo-*/bin
+demo-*/lib

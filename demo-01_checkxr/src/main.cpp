@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-25 Rune Berg (http://runeberg.io | https://github.com/1runeberg)
+ * Copyright 2024-26 Rune Berg (http://runeberg.io | https://github.com/1runeberg)
  * Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -63,6 +63,6 @@ void android_main( struct android_app *pAndroidApp )
         #ifdef XR_USE_PLATFORM_ANDROID
             return xrlib::ExitApp( pAndroidApp );
         #else
-            return xrlib::ExitApp( EXIT_FAILURE );
+            return xrlib::ExitApp( EXIT_SUCCESS );
         #endif
 	}

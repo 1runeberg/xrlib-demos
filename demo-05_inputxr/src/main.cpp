@@ -1,5 +1,5 @@
 /* 
- * Copyright 2024,2025 Copyright Rune Berg 
+ * Copyright 2024-26 Rune Berg
  * https://github.com/1runeberg | http://runeberg.io | https://runeberg.social | https://www.youtube.com/@1RuneBerg
  * Licensed under Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0
  * SPDX-License-Identifier: Apache-2.0
@@ -97,6 +97,7 @@ int main( int argc, char *argv[] )
 
 	// (4.4) Create supported controllers
 	ValveIndex controllerIndex {};
+	ValveFrame controllerFrame {};
 	OculusTouch controllerTouch {};
 	HTCVive controllerVive {};
 	MicrosoftMixedReality controllerMR {};
@@ -113,6 +114,9 @@ int main( int argc, char *argv[] )
 	baseController.vecSupportedControllers.push_back( &controllerVive );
 	baseController.vecSupportedControllers.push_back( &controllerMR );
 
+	if ( pApp->GetInstance()->IsExtensionEnabled( ValveFrame::k_pccExtensionName ) )
+		baseController.vecSupportedControllers.push_back( &controllerFrame );
+
 	// Poses
 	pInput->AddBinding( &baseController, actionHiltPose.xrActionHandle, XR_HAND_LEFT_EXT, InputComponent::GripPose, InputQualifier::None );
 	pInput->AddBinding( &baseController, actionHiltPose.xrActionHandle, XR_HAND_RIGHT_EXT, InputComponent::GripPose, InputQualifier::None );
@@ -121,8 +125,8 @@ int main( int argc, char *argv[] )
 	pInput->AddBinding( &baseController, actionBladePose.xrActionHandle, XR_HAND_RIGHT_EXT, InputComponent::GripPose, InputQualifier::None );
 
 	// Blade scaling
-	pInput->AddBinding( &baseController, actionScaleBlade.xrActionHandle, XR_HAND_LEFT_EXT, InputComponent::Trigger, InputQualifier::Click );
-	pInput->AddBinding( &baseController, actionScaleBlade.xrActionHandle, XR_HAND_RIGHT_EXT, InputComponent::Trigger, InputQualifier::Click );
+	pInput->AddBinding( &baseController, actionScaleBlade.xrActionHandle, XR_HAND_LEFT_EXT, InputComponent::Trigger, InputQualifier::Value );
+	pInput->AddBinding( &baseController, actionScaleBlade.xrActionHandle, XR_HAND_RIGHT_EXT, InputComponent::Trigger, InputQualifier::Value );
 
 	// Button actions
 	pInput->AddBinding( &baseController, actionCycleRenderMode.xrActionHandle, XR_HAND_LEFT_EXT, InputComponent::PrimaryButton, InputQualifier::Click );

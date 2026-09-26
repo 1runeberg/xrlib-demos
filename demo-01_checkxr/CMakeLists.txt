@@ -1,5 +1,5 @@
 # xrlib demo 01 : checkxr
-# Copyright 2024,2025 Copyright Rune Berg 
+# Copyright 2024-26 Rune Berg
 # https://github.com/1runeberg | http://runeberg.io | https://runeberg.social | https://www.youtube.com/@1RuneBerg
 # Licensed under Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0
 # SPDX-License-Identifier: Apache-2.0
@@ -21,6 +21,12 @@ set(CMAKE_SUPPRESS_REGENERATION true)
 set(APP_NAME "checkxr")
 set(PROJECT_NAME "01_${APP_NAME}")
 project("${PROJECT_NAME}" VERSION 1.0.0)
+
+option(STEAMOS_ARM64 "Build for SteamOS ARM64" OFF)
+if(STEAMOS_ARM64)
+    add_subdirectory(steamos)
+    return()
+endif()
 
 # Project directories
 set(APP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")

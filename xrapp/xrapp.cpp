@@ -1,5 +1,5 @@
 /* 
- * Copyright 2024,2025 Copyright Rune Berg 
+ * Copyright 2024-26 Rune Berg
  * https://github.com/1runeberg | http://runeberg.io | https://runeberg.social | https://www.youtube.com/@1RuneBerg
  * Licensed under Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0
  * SPDX-License-Identifier: Apache-2.0
@@ -12,7 +12,7 @@
 
 
 #include <xrapp.hpp>
-#include <tinygltf/tiny_gltf.h>
+#include <xrvk/gltf.hpp>
 
 namespace xrapp
 {
@@ -402,7 +402,7 @@ namespace xrapp
 
 		std::unique_ptr< CGltf > pGltf = std::make_unique< CGltf >( m_pXrSession.get() );
 		std::vector< std::future< void > > futures;
-		std::vector< std::unique_ptr< tinygltf::Model > > models;
+		std::vector< std::unique_ptr< SGltfModel > > models;
 
 		futures.reserve( meshes.size() );
 		models.reserve( meshes.size() );
@@ -413,8 +413,8 @@ namespace xrapp
 
 		for ( auto &mesh : meshes )
 		{
-			models.push_back( std::make_unique< tinygltf::Model > () );
-			tinygltf::Model *currentModel = models.back().get();
+			models.push_back( std::make_unique< SGltfModel > () );
+			SGltfModel *currentModel = models.back().get();
 
 			auto future = pThreadPool->SubmitTask(
 				[ pGltf = pGltf.get(),
