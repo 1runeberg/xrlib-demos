@@ -45,6 +45,11 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: android-${{ matrix.demo }}
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@fffaaafeea488556c2c12dad60690008bc1caacb # v4.4.2
+        with:
+          cmakeVersion: 3.30.5
           
       - name: Create dummy keystore properties
         run: |
