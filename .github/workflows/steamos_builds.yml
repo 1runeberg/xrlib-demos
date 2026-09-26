@@ -1,0 +1,30 @@
+name: SteamOS ARM64
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-steamos:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build packages
+        run: |
+          docker build --platform linux/arm64 --target packages \
+            --output type=local,dest=. \
+            -f platforms/steamos/Dockerfile .
+
+      - name: Archive deployment folders
+        run: tar -czf steamos-arm64.tar.gz demo-*/build/steamos-arm64/deploy
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: steamos-arm64
+          path: steamos-arm64.tar.gz
+          if-no-files-found: error
