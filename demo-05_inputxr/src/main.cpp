@@ -241,26 +241,8 @@ int main( int argc, char *argv[] )
 
 		if ( bFrameStarted && pApp->pRenderInfo->state.frameState.shouldRender )
 		{
-			// Update sky animation
-			float displayRate = pApp->GetDisplayRate() ? 
-				pApp->GetDisplayRate()->GetCurrentRefreshRate( pApp->GetSession()->GetXrSession() ) : 72.0f;
-
-			pApp->skyanim.UpdateAnimation(
-				pApp->assets, 
-				pApp->pRenderInfo->state.frameState.predictedDisplayPeriod,
-				displayRate,
-				pApp->gamestate.skyMateriaDataId,
-				pApp->gamestate.vecMaterialData	);
-
-			auto now = std::chrono::high_resolution_clock::now();
-			auto duration = std::chrono::duration< float >( now.time_since_epoch() );
-			float timeInSeconds = duration.count();
-			pApp->gamestate.vecMaterialData[ pApp->gamestate.skyMateriaDataId ]->emissiveFactor[ 0 ] = timeInSeconds;
-
-			// Update player position for floor marker
-			XrVector3f hmdLocation = pApp->pRenderInfo->state.hmdPose.position;
-			pApp->gamestate.vecMaterialData[ pApp->gamestate.floorMateriaDataId ]->emissiveFactor[ 0 ] = hmdLocation.x;
-			pApp->gamestate.vecMaterialData[ pApp->gamestate.floorMateriaDataId ]->emissiveFactor[ 1 ] = hmdLocation.z;
+			// Follow the head with the sky and run the shooting stars
+			pApp->UpdateBackdrop();
 
 			// Update plasma blade effect
 			pApp->plasma.UpdateEffect( 
