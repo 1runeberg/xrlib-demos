@@ -304,8 +304,8 @@ namespace app
 
 		// (3) Parallel load meshes using built-in thread pool manager
 		ParallelLoadMeshes( { 
-			{ .pRenderModel = assets.pHiltLeft, .sFilename = "Saber/hilt/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f } },
-			{ .pRenderModel = assets.pHiltRight, .sFilename = "Saber/hilt/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f } },
+			{ .pRenderModel = assets.pHiltLeft, .sFilename = "PreparedSaber/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f }, .sTextureDirectory = "PreparedSaber/textures" },
+			{ .pRenderModel = assets.pHiltRight, .sFilename = "PreparedSaber/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f }, .sTextureDirectory = "PreparedSaber/textures" },
 			{ .pRenderModel = assets.pBladeLeft, .sFilename = "Saber/blade.glb", .scale = { 0.04f, 0.04f, 0.04f } },
 			{ .pRenderModel = assets.pBladeRight, .sFilename = "Saber/blade.glb", .scale = { 0.04f, 0.04f, 0.04f } },
 			{ .pRenderModel = assets.pButtonBottomLeft, .sFilename = "Saber/btnbottom.glb", .scale = { 0.04f, 0.04f, 0.04f } },
