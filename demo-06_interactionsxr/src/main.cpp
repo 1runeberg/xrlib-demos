@@ -13,11 +13,22 @@
 
 #include <app.hpp>
 
+#ifdef XR_USE_PLATFORM_ANDROID
+#include <unistd.h>
+#endif
+
 using namespace app;
 
 #ifdef XR_USE_PLATFORM_ANDROID
 void android_main( struct android_app *pAndroidApp )
 {
+	// On Quest, this thread's exit cleanup aborts on a binder object the runtime has already released.
+	// Declared first so it's destroyed last, ending the process once the app is fully torn down
+	struct SEndProcess
+	{
+		~SEndProcess() { _exit( 0 ); }
+	} endProcess;
+
 	// (1) Create App
 	std::unique_ptr< App > pApp = std::make_unique< App >( 
 		pAndroidApp, 
@@ -233,6 +244,10 @@ int main( int argc, char *argv[] )
 	debugPinchIndicator->instances[ 1 ].space = actionPinchPose.vecActionSpaces[ 1 ];
 
 	// (5) Game loop
+	#ifdef XR_USE_PLATFORM_ANDROID
+	auto destroyStarted = std::chrono::steady_clock::time_point {};
+	#endif
+
 	while ( pApp->GetSession()->GetState() != XR_SESSION_STATE_EXITING )
 	{
 		// (5.1) Poll for xr events
@@ -242,6 +257,25 @@ int main( int argc, char *argv[] )
 
 		// (5.2) Process xr events
 		pApp->ProcessXrEvents( xrEventDataBaseheader );
+
+	#ifdef XR_USE_PLATFORM_ANDROID
+
+		// Quitting from the system menu destroys the activity without the session reaching exiting.
+		// Keep handling events without rendering so the runtime's stopping state ends the session, then leave
+		if ( pAndroidApp->destroyRequested )
+		{
+			const auto now = std::chrono::steady_clock::now();
+			if ( destroyStarted == std::chrono::steady_clock::time_point {} )
+				destroyStarted = now;
+
+			const auto state = pApp->GetSession()->GetState();
+			if ( state == XR_SESSION_STATE_IDLE || state == XR_SESSION_STATE_LOSS_PENDING || now - destroyStarted > std::chrono::seconds( 2 ) )
+				break;
+
+			std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+			continue;
+		}
+	#endif
 
 		// (5.4) Input Frame
 		pApp->pThreadPool->SubmitInputTask( [ pInput = pApp->pInput.get() ]() { pInput->ProcessInput(); } ).get();
