@@ -14,7 +14,6 @@ queries, rendering, passthrough, hand tracking and controller input.
 - [demo-03_passthroughxr](demo-03_passthroughxr): display passthrough using the FB passthrough extension
 - [demo-04_handtrackingxr](demo-04_handtrackingxr): display joint indicators for tracked hands
 - [demo-05_inputxr](demo-05_inputxr): control a saber with action bindings and haptics, with PBR rendering and optional passthrough
-- [demo-06_interactionsxr](demo-06_interactionsxr): use pinch and grasp actions, controller poses and mesh projection passthrough
 
 [<img src="images/demo-05_inputxr_thumb.png" alt="inputxr" width="200" />](demo-05_inputxr)
 
@@ -68,7 +67,7 @@ cmake --build build --config Release --target displayxr --parallel
 ```
 
 The targets are `checkxr`, `displayxr`, `passthroughxr`, `handtrackingxr`,
-`inputxr` and `interactionsxr`.
+and `inputxr`.
 
 Executables, libraries and runtime assets are
 copied into each demo's `bin/` folder.

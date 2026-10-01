@@ -18,7 +18,6 @@ jobs:
           - demo-03_passthroughxr
           - demo-04_handtrackingxr
           - demo-05_inputxr
-          - demo-06_interactionsxr
         
     steps:
       - uses: actions/checkout@v4
