@@ -418,17 +418,35 @@ namespace xrapp
 		futures.reserve( meshes.size() );
 		models.reserve( meshes.size() );
 
+		// Meshes with prepared textures need their own loader, the texture directory is a loader option
+		std::vector< std::unique_ptr< CGltf > > preparedLoaders;
+		std::vector< CGltf * > loaders;
+		for ( auto &mesh : meshes )
+		{
+			if ( mesh.sTextureDirectory.empty() )
+			{
+				loaders.push_back( pGltf.get() );
+				continue;
+			}
+
+			SGltfLoadOptions options;
+			options.textureDirectory = mesh.sTextureDirectory;
+			preparedLoaders.push_back( std::make_unique< CGltf >( m_pXrSession.get(), options ) );
+			loaders.push_back( preparedLoaders.back().get() );
+		}
+
 		// Load meshes from disk (use worker threads from thread pool manager)
 		auto start = std::chrono::high_resolution_clock::now();
 		LogInfo( m_pXrInstance->GetAppName(), "Parallel loading meshes started. Please wait..." );
 
-		for ( auto &mesh : meshes )
+		for ( size_t i = 0; i < meshes.size(); i++ )
 		{
+			const auto &mesh = meshes[ i ];
 			models.push_back( std::make_unique< SGltfModel > () );
 			SGltfModel *currentModel = models.back().get();
 
 			auto future = pThreadPool->SubmitTask(
-				[ pGltf = pGltf.get(),
+				[ pGltf = loaders[ i ],
 				renderModel = mesh.pRenderModel,
 				model = currentModel,
 				filename = mesh.sFilename,
@@ -456,7 +474,7 @@ namespace xrapp
 
 		for ( size_t i = 0; i < meshes.size(); i++ )
 		{
-			pGltf->ParseModel( meshes[ i ].pRenderModel, models[ i ].get(), m_pRender->GetCommandPool() );
+			loaders[ i ]->ParseModel( meshes[ i ].pRenderModel, models[ i ].get(), m_pRender->GetCommandPool() );
 		}
 
 		end = std::chrono::high_resolution_clock::now();
