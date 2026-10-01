@@ -14,6 +14,12 @@
 #include <app.hpp>
 #include <xrlib/ext/EXT/hand_tracking.hpp>
 
+#ifdef XR_USE_PLATFORM_ANDROID
+#include <chrono>
+#include <thread>
+#include <unistd.h>
+#endif
+
 #define APP_NAME "inputxr"
 using namespace app;
 
@@ -22,6 +28,13 @@ static const float k_bladeScaleHapticThreshold = 0.035f;
 #ifdef XR_USE_PLATFORM_ANDROID
 void android_main( struct android_app *pAndroidApp )
 {
+    // On Quest, this thread's exit cleanup aborts on a binder object the runtime has already released.
+    // Declared first so it's destroyed last, ending the process once the app is fully torn down
+    struct SEndProcess
+    {
+        ~SEndProcess() { _exit( 0 ); }
+    } endProcess;
+
     // (1) Create App
     std::unique_ptr< App > pApp = std::make_unique< App >(
             pAndroidApp,
@@ -179,6 +192,10 @@ int main( int argc, char *argv[] )
 	pApp->assets.pBladeRight->instances[ 0 ].space = actionBladePose.vecActionSpaces[ 1 ];
 
 
+	#ifdef XR_USE_PLATFORM_ANDROID
+	auto destroyStarted = std::chrono::steady_clock::time_point {};
+	#endif
+
 	// (5) Render loop
 	while ( pApp->GetSession()->GetState() != XR_SESSION_STATE_EXITING )
 	{
@@ -189,6 +206,25 @@ int main( int argc, char *argv[] )
 
 		// (5.2) Process xr events
 		pApp->ProcessXrEvents( xrEventDataBaseheader );
+
+	#ifdef XR_USE_PLATFORM_ANDROID
+
+		// Quitting from the system menu destroys the activity without the session reaching exiting.
+		// Keep handling events without rendering so the runtime's stopping state ends the session, then leave
+		if ( pAndroidApp->destroyRequested )
+		{
+			const auto now = std::chrono::steady_clock::now();
+			if ( destroyStarted == std::chrono::steady_clock::time_point {} )
+				destroyStarted = now;
+
+			const auto state = pApp->GetSession()->GetState();
+			if ( state == XR_SESSION_STATE_IDLE || state == XR_SESSION_STATE_LOSS_PENDING || now - destroyStarted > std::chrono::seconds( 2 ) )
+				break;
+
+			std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+			continue;
+		}
+	#endif
 
 		// (5.3) Get thread pool manager
 		CThreadPool *pThreadPool = pApp->pThreadPool.get();
