@@ -303,9 +303,16 @@ namespace app
 		assets.pButtonTopRight->isVisible = false;
 
 		// (3) Parallel load meshes using built-in thread pool manager
+		// Mobile GPUs get ASTC hilt textures, desktop GPUs don't support them
+		#if defined( XR_USE_PLATFORM_ANDROID ) || defined( XRAPP_STEAMOS )
+			const std::string sSaber = "PreparedSaberAstc";
+		#else
+			const std::string sSaber = "PreparedSaber";
+		#endif
+
 		ParallelLoadMeshes( { 
-			{ .pRenderModel = assets.pHiltLeft, .sFilename = "PreparedSaber/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f }, .sTextureDirectory = "PreparedSaber/textures" },
-			{ .pRenderModel = assets.pHiltRight, .sFilename = "PreparedSaber/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f }, .sTextureDirectory = "PreparedSaber/textures" },
+			{ .pRenderModel = assets.pHiltLeft, .sFilename = sSaber + "/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f }, .sTextureDirectory = sSaber + "/textures" },
+			{ .pRenderModel = assets.pHiltRight, .sFilename = sSaber + "/hilt.gltf", .scale = { 0.04f, 0.04f, 0.04f }, .sTextureDirectory = sSaber + "/textures" },
 			{ .pRenderModel = assets.pBladeLeft, .sFilename = "Saber/blade.glb", .scale = { 0.04f, 0.04f, 0.04f } },
 			{ .pRenderModel = assets.pBladeRight, .sFilename = "Saber/blade.glb", .scale = { 0.04f, 0.04f, 0.04f } },
 			{ .pRenderModel = assets.pButtonBottomLeft, .sFilename = "Saber/btnbottom.glb", .scale = { 0.04f, 0.04f, 0.04f } },

@@ -1,0 +1,14 @@
+{
+  "fingerprint": "c39853907cd92260",
+  "tool": "ktx version: v4.4.2",
+  "outputs": {
+    "KKS_BaseColor2K.png": 2754403,
+    "KKS_Normal2K.png": 3398120,
+    "KKS_ORM2K.png": 4472839,
+    "hilt.bin": 186120,
+    "hilt.gltf": 2705,
+    "textures/image-0.ktx2": 5592976,
+    "textures/image-1.ktx2": 2498256,
+    "textures/image-2.ktx2": 2498256
+  }
+}

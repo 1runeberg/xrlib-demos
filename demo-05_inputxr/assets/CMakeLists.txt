@@ -24,12 +24,16 @@ add_custom_target(regenerate_environment
 
 add_dependencies(regenerate_environment xrvk-tools)
 
-# Mipmapped KTX2 copies of the hilt textures, the prepared hilt is bundled
+# Mipmapped KTX2 copies of the hilt textures, the prepared hilts are bundled
+# Desktop uses the uncompressed set, Android and SteamOS use ASTC
 find_program(KTX_EXECUTABLE NAMES ktx DOC "KTX-Software host executable")
 add_custom_target(prepare_saber
     COMMAND xrvk-tools gltf
         --source "${CMAKE_CURRENT_SOURCE_DIR}/src/Saber/hilt/hilt.gltf"
         --output "${CMAKE_CURRENT_SOURCE_DIR}/bin/PreparedSaber" --ktx "${KTX_EXECUTABLE}" --force
+    COMMAND xrvk-tools gltf
+        --source "${CMAKE_CURRENT_SOURCE_DIR}/src/Saber/hilt/hilt.gltf"
+        --output "${CMAKE_CURRENT_SOURCE_DIR}/bin/PreparedSaberAstc" --ktx "${KTX_EXECUTABLE}" --encode astc --force
     VERBATIM USES_TERMINAL)
 
 add_dependencies(prepare_saber xrvk-tools)
