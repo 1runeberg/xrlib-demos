@@ -53,6 +53,7 @@ endif()
 add_executable(${APP_NAME} ${APP_SOURCES})
 target_include_directories(${APP_NAME} PRIVATE "${APP_ROOT}/src" "${DEMOS_ROOT}/xrapp")
 target_link_libraries(${APP_NAME} PRIVATE xrlib)
+target_compile_definitions(${APP_NAME} PRIVATE XRAPP_STEAMOS=1)
 set_target_properties(${APP_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     INSTALL_RPATH "$ORIGIN")
@@ -102,5 +103,5 @@ if(APP_NAME STREQUAL "inputxr")
     install(FILES ${SHADER_OUTPUTS} DESTINATION . COMPONENT SteamOS)
     install(DIRECTORY "${XRLIB_ROOT}/res/models/bin/" "${APP_ROOT}/assets/bin/"
         DESTINATION . COMPONENT SteamOS
-        PATTERN "*.spv" EXCLUDE PATTERN ".DS_Store" EXCLUDE)
+        PATTERN "*.spv" EXCLUDE PATTERN ".DS_Store" EXCLUDE PATTERN "PreparedSaber" EXCLUDE)
 endif()
