@@ -19,6 +19,10 @@
 #include <xrlib/ext/KHR/visibility_mask.hpp> // Stencil out portions of the eye textures that will never be visible to the user
 #include <xrvk/render.hpp>					 // We'll use xrlib's built-in vulkan renderer
 
+#ifdef XR_USE_PLATFORM_ANDROID
+	#include <unistd.h>
+#endif
+
 using namespace xrlib;
 
 /// Create an openxr instance and probe the user's system
@@ -28,6 +32,12 @@ using namespace xrlib;
 #ifdef XR_USE_PLATFORM_ANDROID
 void android_main( struct android_app *pAndroidApp )
 {
+	// On Quest, this thread's exit cleanup aborts on a binder object the runtime has already released.
+	// Declared first so it's destroyed last, ending the process once the app is fully torn down
+	struct SEndProcess
+	{
+		~SEndProcess() { _exit( 0 ); }
+	} endProcess;
 
 	// (1a) Create an xr instance, we'll leave the optional log level parameter to verbose
 	std::unique_ptr< CInstance > pXrInstance = std::make_unique< CInstance >( pAndroidApp, "displayxr", 1 );
@@ -204,9 +214,15 @@ int main( int argc, char *argv[] )
 
 	// (12) Render loop
 	bool bRunning = false;
+	bool bHostActive = true;
 	XrResult xrPreviousFrameResult = XR_SUCCESS;
 	while ( pXrSession->GetState() != XR_SESSION_STATE_EXITING && pXrSession->GetState() != XR_SESSION_STATE_LOSS_PENDING )
 	{
+#ifdef XR_USE_PLATFORM_ANDROID
+
+		// Quitting from the system menu destroys the activity without the session reaching exiting
+		bHostActive = !pAndroidApp->destroyRequested;
+#endif
 
 		// (12.1) Drain queued events before starting another frame
 		for ( ;; )
@@ -220,7 +236,7 @@ int main( int argc, char *argv[] )
 			// (12.2) Process xr events
 			if ( xrEventDataBaseheader.type == XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED )
 			{
-				if ( pXrSession->GetState() == XR_SESSION_STATE_READY && !bRunning )
+				if ( pXrSession->GetState() == XR_SESSION_STATE_READY && !bRunning && bHostActive )
 				{
 
 					// Start session - begin the app's frame loop here
@@ -266,8 +282,12 @@ int main( int argc, char *argv[] )
 				LogError( "displayxr", "Session teardown failed: %s", XrEnumToString( xrEndResult ) );
 		}
 
+		// Finish STOPPING before releasing images still used by the compositor
+		if ( !bHostActive && !bRunning )
+			break;
+
 		// (12.3) Render only while the session is running
-		if ( bRunning && pXrSession->GetState() >= XR_SESSION_STATE_READY && pXrSession->GetState() <= XR_SESSION_STATE_FOCUSED )
+		if ( bHostActive && bRunning && pXrSession->GetState() >= XR_SESSION_STATE_READY && pXrSession->GetState() <= XR_SESSION_STATE_FOCUSED )
 		{
 			const XrResult xrFrameResult = pRender->RenderFrame( renderPass, pRenderInfo.get(), vecMasks );
 			if ( XR_FAILED( xrFrameResult ) && xrFrameResult != xrPreviousFrameResult )
