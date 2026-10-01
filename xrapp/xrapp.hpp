@@ -39,6 +39,7 @@ namespace xrapp
 			CRenderModel *pRenderModel = nullptr;
 			std::string sFilename;
 			XrVector3f scale = { 1.0f, 1.0f, 1.0f };
+			std::string sTextureDirectory; // Optional prepared KTX2 textures with mipmaps, one image-N.ktx2 per glTF image
 		};
 
 		struct SLoadMaterialInfo
