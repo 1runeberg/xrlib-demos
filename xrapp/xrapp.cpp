@@ -43,7 +43,18 @@ namespace xrapp
 	}
 #endif
 
-	XrApp::~XrApp() {}
+	XrApp::~XrApp()
+	{
+		// The session and renderer own the Vulkan device and go first as members, so stop the
+		// worker threads and release everything that still uses the device while it's alive
+		pThreadPool.reset();
+
+		if ( m_pXrSession && m_pXrSession->GetVulkan() && m_pXrSession->GetVulkan()->GetVkLogicalDevice() )
+			vkDeviceWaitIdle( m_pXrSession->GetVulkan()->GetVkLogicalDevice() );
+
+		pRenderInfo.reset();
+		pTextureManager.reset();
+	}
 
 	XrResult XrApp::InitInstance( std::vector< const char * > &vecExtensions, std::vector< const char * > &vecApiLayers, const XrInstanceCreateFlags createFlags, const void *pNext )
 	{
