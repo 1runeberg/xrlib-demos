@@ -1,5 +1,5 @@
 /* 
- * Copyright 2024,2025 Copyright Rune Berg 
+ * Copyright 2024-26 Copyright Rune Berg 
  * https://github.com/1runeberg | http://runeberg.io | https://runeberg.social | https://www.youtube.com/@1RuneBerg
  * Licensed under Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0
  * SPDX-License-Identifier: Apache-2.0
@@ -14,12 +14,25 @@
 #include <app.hpp>
 #include <xrlib/ext/EXT/hand_tracking.hpp>
 
+#ifdef XR_USE_PLATFORM_ANDROID
+#include <chrono>
+#include <thread>
+#include <unistd.h>
+#endif
+
 #define APP_NAME "handtrackingxr"
 using namespace app;
 
 #ifdef XR_USE_PLATFORM_ANDROID
 void android_main( struct android_app *pAndroidApp )
 {
+	// On Quest, this thread's exit cleanup aborts on a binder object the runtime has already released.
+	// Declared first so it's destroyed last, ending the process once the app is fully torn down
+	struct SEndProcess
+	{
+		~SEndProcess() { _exit( 0 ); }
+	} endProcess;
+
 	// (1) Create App
 	std::unique_ptr< App > pApp = std::make_unique< App >( 
 		pAndroidApp, 
@@ -79,6 +92,10 @@ int main( int argc, char *argv[] )
 		pApp->pRenderInfo->AddNewRenderable( dynamic_cast< CRenderable * >( debugIndicator ) );
 	}
 
+	#ifdef XR_USE_PLATFORM_ANDROID
+	auto destroyStarted = std::chrono::steady_clock::time_point {};
+	#endif
+
 	// (5) Render loop
 	while ( pApp->GetSession()->GetState() != XR_SESSION_STATE_EXITING )
 	{
@@ -89,6 +106,25 @@ int main( int argc, char *argv[] )
 
 		// (5.2) Process xr events
 		pApp->ProcessXrEvents( xrEventDataBaseheader );
+
+	#ifdef XR_USE_PLATFORM_ANDROID
+
+		// Quitting from the system menu destroys the activity without the session reaching exiting.
+		// Keep handling events without rendering so the runtime's stopping state ends the session, then leave
+		if ( pAndroidApp->destroyRequested )
+		{
+			const auto now = std::chrono::steady_clock::now();
+			if ( destroyStarted == std::chrono::steady_clock::time_point {} )
+				destroyStarted = now;
+
+			const auto state = pApp->GetSession()->GetState();
+			if ( state == XR_SESSION_STATE_IDLE || state == XR_SESSION_STATE_LOSS_PENDING || now - destroyStarted > std::chrono::seconds( 2 ) )
+				break;
+
+			std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+			continue;
+		}
+	#endif
 
 		// (5.3) Render frame
 		CThreadPool *pThreadPool = pApp->pThreadPool.get();
