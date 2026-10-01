@@ -269,8 +269,9 @@ int main( int argc, char *argv[] )
 
 		}
 
-		// Submit EndRenderFrame to render thread and wait for it
-		pThreadPool->SubmitRenderTask( [ pApp = pApp.get() ]() { pApp->EndRenderFrame(); } ).get();
+		// Submit EndRenderFrame to render thread and wait for it, only for a frame that started
+		if ( bFrameStarted )
+			pThreadPool->SubmitRenderTask( [ pApp = pApp.get() ]() { pApp->EndRenderFrame(); } ).get();
 	}
 
 	// (6) Exit app - xrlib objects (instance, session, renderer, etc) handles proper cleanup once unique pointers goes out of scope.
