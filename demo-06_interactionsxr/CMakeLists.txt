@@ -253,6 +253,9 @@ add_custom_command(
                     # Copy app assets to out binary directory
                     #COMMAND ${CMAKE_COMMAND} -E copy_directory "${APP_ASSETS}" "${APP_BIN_OUT}"
 
+                    # Copy the prepared night grid lighting and sky
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory "${APP_ASSETS}/PreparedNightGrid" "${APP_BIN_OUT}/PreparedNightGrid"
+
                     # copy xrlib to out binary directory
                     COMMAND ${CMAKE_COMMAND} -E copy_directory "${XRLIB_BIN_OUT}" "${APP_BIN_OUT}"
                     COMMAND ${CMAKE_COMMAND} -E copy_directory "${XRLIB_LIB_OUT}" "${APP_BIN_OUT}"
