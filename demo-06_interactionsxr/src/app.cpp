@@ -1,5 +1,5 @@
 /* 
- * Copyright 2024,2025 Copyright Rune Berg 
+ * Copyright 2024-26 Copyright Rune Berg 
  * https://github.com/1runeberg | http://runeberg.io | https://runeberg.social | https://www.youtube.com/@1RuneBerg
  * Licensed under Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0
  * SPDX-License-Identifier: Apache-2.0
@@ -33,6 +33,22 @@ namespace app
 
 	App::~App() 
 	{ 
+		ReleaseBackdrop();
+	}
+
+	void App::ReleaseBackdrop()
+	{
+		if ( !m_pXrSession || !m_pXrSession->GetVulkan() || !m_pXrSession->GetVulkan()->GetVkLogicalDevice() )
+			return;
+
+		// The sky texture and night lighting belong to the device, so release them while it's still alive
+		vkDeviceWaitIdle( m_pXrSession->GetVulkan()->GetVkLogicalDevice() );
+		if ( pRenderInfo && assets.pNightLighting )
+			pRenderInfo->SetEnvironment( nullptr );
+
+		assets.pNightLighting.reset();
+		if ( pTextureManager && assets.skyTexture.image != VK_NULL_HANDLE )
+			pTextureManager->DestroyTexture( assets.skyTexture );
 	}
 
 #ifdef XR_USE_PLATFORM_ANDROID
@@ -227,32 +243,14 @@ namespace app
 			true	// Create pbr and scene lighting layout and descriptors
 		);
 
-		// (4) Sky and Floor pipelines
+		// (4) Night grid backdrop pipelines
 
-		// Customize - enable alpha blending
-		SPipelineStateInfo pipelineInfo = m_pRender->CreateDefaultPipelineState( 
-			m_pRender->GetTextureWidth(), 
+		// The opaque floor writes depth first, then the sky sits at the far plane so the depth test skips
+		// every pixel the floor already covers
+		SPipelineStateInfo backdropState = m_pRender->CreateDefaultPipelineState(
+			m_pRender->GetTextureWidth(),
 			m_pRender->GetTextureHeight() );
-
-		pipelineInfo.colorBlendAttachments.clear();
-		VkPipelineColorBlendAttachmentState colorBlending = m_pRender->GenerateColorBlendAttachment( true );
-		pipelineInfo.colorBlendAttachments.push_back( colorBlending );
-		pipelineInfo.colorBlend = m_pRender->GeneratePipelineStateCI_ColorBlendCI( pipelineInfo.colorBlendAttachments );
-
-		m_pRender->CreateGraphicsPipeline_CustomPBR(
-        #ifdef XR_USE_PLATFORM_ANDROID
-                m_pRender->GetAppInstance()->GetAssetManager(),
-        #endif
-			pipelines,
-			pipelines.sky,
-			pRenderInfo.get(),
-			mainRenderPass,
-			defaultShaders.meshPbrVertexShader,
-			defaultShaders.meshPbrFragmentSkyShader,
-			pipelineInfo,
-			false, // reuse main pbr pipeline layouts
-			2	   // potential mesh count
-		);
+		backdropState.rasterization.cullMode = VK_CULL_MODE_NONE;
 
 		m_pRender->CreateGraphicsPipeline_CustomPBR(
         #ifdef XR_USE_PLATFORM_ANDROID
@@ -262,13 +260,54 @@ namespace app
 			pipelines.floor,
 			pRenderInfo.get(),
 			mainRenderPass,
-			defaultShaders.meshPbrVertexShader,
-			defaultShaders.meshPbrFragmentFloorShader, 
-			pipelineInfo,
+			"backdrop.vert.spv",
+			"night_grid_floor.frag.spv",
+			backdropState,
 			false, // reuse main pbr pipeline layouts
-			2	   // potential mesh count
+			4	   // potential mesh count
 		);
 
+		backdropState.depthStencil.depthWriteEnable = VK_FALSE;
+		backdropState.depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+
+		m_pRender->CreateGraphicsPipeline_CustomPBR(
+        #ifdef XR_USE_PLATFORM_ANDROID
+                m_pRender->GetAppInstance()->GetAssetManager(),
+        #endif
+			pipelines,
+			pipelines.sky,
+			pRenderInfo.get(),
+			mainRenderPass,
+			"backdrop_far.vert.spv",
+			"night_grid_sky.frag.spv",
+			backdropState,
+			false,
+			4
+		);
+
+		// Stars and shooting stars add their glow over the sky, still behind anything that wrote depth
+		auto &starBlend = backdropState.colorBlendAttachments.front();
+		starBlend.blendEnable = VK_TRUE;
+		starBlend.srcColorBlendFactor = starBlend.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+		starBlend.colorBlendOp = VK_BLEND_OP_ADD;
+		starBlend.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+		starBlend.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		starBlend.alphaBlendOp = VK_BLEND_OP_ADD;
+
+		m_pRender->CreateGraphicsPipeline_CustomPBR(
+        #ifdef XR_USE_PLATFORM_ANDROID
+                m_pRender->GetAppInstance()->GetAssetManager(),
+        #endif
+			pipelines,
+			m_unStarsPipeline,
+			pRenderInfo.get(),
+			mainRenderPass,
+			"night_grid_stars.vert.spv",
+			"night_grid_stars.frag.spv",
+			backdropState,
+			false,
+			4
+		);
 	}
 
 	void App::SetupScene() 
@@ -280,42 +319,86 @@ namespace app
 			pRenderInfo->pSceneLighting->ambientIntensity = 1.0f;
 
 			pRenderInfo->pSceneLighting->tonemapping.setRenderMode( ERenderMode::Unlit );
-			pRenderInfo->pSceneLighting->tonemapping.setTonemapOperator( ETonemapOperator::None );
+
+			// The night grid is HDR, so map it down rather than clipping
+			pRenderInfo->pSceneLighting->tonemapping.setTonemapOperator( ETonemapOperator::KHRNeutral );
 		}
-	
-		// RENDER MODELS (organized by depth, parallel processing using worker threads from thread pool manager)
-		
-		// (2) Define models to be used in this app
+
+		// (2) Night grid lighting, the backdrop shaders also take their brightness from its intensity
+		const auto iblBytes = ReadBinaryFile(
+		#ifdef XR_USE_PLATFORM_ANDROID
+			m_pRender->GetAppInstance()->GetAssetManager(),
+		#endif
+			"PreparedNightGrid/night_grid.ibl" );
+
+		assets.pNightLighting = std::make_shared< CEnvironmentLighting >();
+		const auto environment = DecodeEnvironment( { reinterpret_cast< const uint8_t * >( iblBytes.data() ), iblBytes.size() } );
+		if ( assets.pNightLighting->Init( m_pRender->GetLogicalDevice(), m_pRender->GetPhysicalDevice(), m_pRender->GetCommandPool(), m_pXrSession->GetVulkan()->GetVkQueue_Graphics(), environment ) != VK_SUCCESS ||
+			 pRenderInfo->SetEnvironment( assets.pNightLighting, 1.f, 0.f ) != VK_SUCCESS )
+			LogError( APP_NAME, "Unable to set up the night grid lighting" );
+
+		// (3) Baked night sky cubemap
+		const auto skyBytes = ReadBinaryFile(
+		#ifdef XR_USE_PLATFORM_ANDROID
+			m_pRender->GetAppInstance()->GetAssetManager(),
+		#endif
+			"PreparedNightGrid/night_grid.sky" );
+
+		auto sky = DecodeBackground( { reinterpret_cast< const uint8_t * >( skyBytes.data() ), skyBytes.size() } );
+		if ( pTextureManager->CreateCubeTextureFromData( assets.skyTexture, VK_FORMAT_E5B9G9R9_UFLOAT_PACK32, sky.pixels.data(), sky.size ) != VK_SUCCESS )
+			LogError( APP_NAME, "Unable to upload the night sky" );
+
+		// (4) Backdrop meshes, generated rather than loaded
+		uint32_t unBackdropPool = 0;
+		pRenderInfo->pDescriptors->CreateDescriptorPool( unBackdropPool, pipelines.pbrFragmentDescriptorLayout, 4 );
+
 		assets.pSky = new CRenderModel( m_pXrSession.get(), pRenderInfo.get(), pipelines.pbrLayout, pipelines.sky );
 		assets.pFloor = new CRenderModel( m_pXrSession.get(), pRenderInfo.get(), pipelines.pbrLayout, pipelines.floor );
+		assets.pStars = new CRenderModel( m_pXrSession.get(), pRenderInfo.get(), pipelines.pbrLayout, m_unStarsPipeline );
+		assets.pShootingStar = new CRenderModel( m_pXrSession.get(), pRenderInfo.get(), pipelines.pbrLayout, m_unStarsPipeline );
 
-		// Lift and flip plane for sky
-		assets.pSky->instances[ 0 ].pose.position.y = 100.f;
-		assets.pSky->instances[ 0 ].pose.orientation = { 1.0f, 0.0f, 0.0f, 0.0f };
+		assets.pSky->textures = { assets.skyTexture };
+		SBackdrop::InitSky( *assets.pSky, 0 );
+		SBackdrop::InitFloor( *assets.pFloor );
+		SBackdrop::InitStars( *assets.pStars );
+		m_shootingStar.Init( *assets.pShootingStar, 0 );
 
-		// (3) Parallel load meshes using built-in thread pool manager
-		ParallelLoadMeshes( { 
-			{ .pRenderModel = assets.pSky, .sFilename = "plane.glb", .scale = { 5000.0f, 1.f, 5000.0f } },
-			{ .pRenderModel = assets.pFloor, .sFilename = "plane.glb", .scale = { 5.0f, 1.f, 5.0f } }
-		} );
+		// (5) Load materials, the sky's carries the cubemap
+		if ( assets.pSky->LoadMaterial( gamestate.vecMaterialData, pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, unBackdropPool, pTextureManager.get() ) != 1 ||
+			 assets.pFloor->LoadMaterial( pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, unBackdropPool, pTextureManager.get() ) != 1 ||
+			 assets.pStars->LoadMaterial( pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, unBackdropPool, pTextureManager.get() ) != 1 ||
+			 assets.pShootingStar->LoadMaterial( pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, unBackdropPool, pTextureManager.get() ) != 1 )
+			LogError( APP_NAME, "Unable to set up the backdrop materials" );
 
-		// (4) Define and load materials for each mesh
+		// (6) Background keeps list order, so the floor's depth is in place before the sky, then stars blend over it
+		for ( auto pBackdrop : { assets.pFloor, assets.pSky, assets.pStars, assets.pShootingStar } )
+		{
+			pBackdrop->renderQueue = ERenderQueue::Background;
+			pBackdrop->InitBuffers();
+			pRenderInfo->vecRenderables.push_back( pBackdrop );
+		}
 
-		// load materials for meshes where we want dynamic updates to maerial variables
-		assets.pSky->LoadMaterial( gamestate.vecMaterialData, pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, pipelines.pbrFragmentDescriptorPool, pTextureManager.get() );
-		gamestate.skyMateriaDataId = gamestate.vecMaterialData.size() - 1;
-		gamestate.vecMaterialData[ gamestate.skyMateriaDataId ]->emissiveFactor[ 1 ] = 1.0f; // reset opacity value input for shader
+		assets.pShootingStar->isVisible = false;
+		m_backdropStarted = std::chrono::steady_clock::now();
+	}
 
-		assets.pFloor->LoadMaterial( gamestate.vecMaterialData, pRenderInfo.get(), pipelines.pbrFragmentDescriptorLayout, pipelines.pbrFragmentDescriptorPool, pTextureManager.get() );
-		gamestate.floorMateriaDataId = gamestate.vecMaterialData.size() - 1;
+	void App::UpdateBackdrop()
+	{
+		if ( !assets.pSky )
+			return;
 
-		// (5) Init mesh buffers
-		assets.pSky->InitBuffers();
-		assets.pFloor->InitBuffers();
+		XrSpaceLocation head { XR_TYPE_SPACE_LOCATION };
+		if ( XR_FAILED( xrLocateSpace( m_pXrSession->GetHmdSpace(), m_pXrSession->GetAppSpace(), pRenderInfo->state.frameState.predictedDisplayTime, &head ) ) )
+			return;
 
-		// (6) Add all meshes to render info for rendering (arranged sequentially as per desired depth draw)
-		pRenderInfo->vecRenderables.push_back( dynamic_cast< CRenderable * >( assets.pSky ) );
-		pRenderInfo->vecRenderables.push_back( dynamic_cast< CRenderable * >( assets.pFloor ) );
+		// Keep the sky centred on the head so it reads as distant
+		if ( head.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT )
+			assets.pSky->instances[ 0 ].pose.position = assets.pStars->instances[ 0 ].pose.position = assets.pShootingStar->instances[ 0 ].pose.position = head.pose.position;
+
+		const float seconds = std::chrono::duration< float >( std::chrono::steady_clock::now() - m_backdropStarted ).count();
+		assets.pShootingStar->isVisible = m_shootingStar.Update( assets.pShootingStar->vertices, seconds, head.pose.orientation );
+		if ( assets.pShootingStar->isVisible )
+			assets.pShootingStar->UpdateVertexBuffer();
 	}
 
 	void App::ProcessXrEvents( XrEventDataBaseHeader &xrEventDataBaseheader ) 

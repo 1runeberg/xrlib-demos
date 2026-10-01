@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Rune Berg (http://runeberg.io | https://github.com/1runeberg)
+ * Copyright 2024-26 Rune Berg (http://runeberg.io | https://github.com/1runeberg)
  * Licensed under Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -10,6 +10,10 @@
 #include <chrono>
 
 #include <xrapp.hpp>
+#include <xrvk/environment.hpp>
+
+#include "backdrop.hpp"
+#include "shooting_star.hpp"
 
 #include <xrlib/ext/EXT/hand_interaction.hpp>
 #include <xrlib/ext/EXT/hand_joints_motion_range.hpp>
@@ -50,6 +54,7 @@ namespace app
 			~App();
 
 			void SetupScene();
+			void UpdateBackdrop();
 			void ProcessXrEvents( XrEventDataBaseHeader &xrEventDataBaseheader );
 
 			bool StartRenderFrame();
@@ -62,10 +67,16 @@ namespace app
 
 			void ActionHaptic( SAction *pAction, uint32_t unActionStateIndex ) const;
 
+			// Night grid backdrop, the sky, stars and shooting star follow the head
 			struct SAssets
 			{
 				CRenderModel *pSky = nullptr;
 				CRenderModel *pFloor = nullptr;
+				CRenderModel *pStars = nullptr;
+				CRenderModel *pShootingStar = nullptr;
+
+				STexture skyTexture;
+				std::shared_ptr< CEnvironmentLighting > pNightLighting;
 			}assets;
 
 			struct SGameState
@@ -73,8 +84,6 @@ namespace app
 				ERenderMode currentRenderMode = ERenderMode::Unlit;
 				ETonemapOperator currentToneMapper = ETonemapOperator::None;
 
-				uint32_t skyMateriaDataId = 0;
-				uint32_t floorMateriaDataId = 0;
 				std::vector< SMaterialUBO * > vecMaterialData;
 
 				bool bLeftControllerActive = false;
@@ -99,6 +108,11 @@ namespace app
 
 	  private:
 			void CreateGraphicsPipelines();
+			void ReleaseBackdrop();
+
+			uint32_t m_unStarsPipeline = 0;
+			SShootingStar m_shootingStar;
+			std::chrono::steady_clock::time_point m_backdropStarted = std::chrono::steady_clock::now();
 
 			// Plane facing user for passthrough mesh projection
 			std::vector< XrVector3f > m_vecVertices;

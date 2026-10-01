@@ -1,5 +1,5 @@
 /* 
- * Copyright 2024,2025 Copyright Rune Berg 
+ * Copyright 2024-26 Copyright Rune Berg 
  * https://github.com/1runeberg | http://runeberg.io | https://runeberg.social | https://www.youtube.com/@1RuneBerg
  * Licensed under Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0
  * SPDX-License-Identifier: Apache-2.0
@@ -288,6 +288,9 @@ int main( int argc, char *argv[] )
 
 		if ( bFrameStarted )
 		{
+			// Follow the head with the sky and run the shooting stars
+			pApp->UpdateBackdrop();
+
 			// Check conditions before submitting to thread pool
 			if ( pApp->GetHandTracking() &&
 				 pApp->pRenderInfo->state.frameState.shouldRender &&
