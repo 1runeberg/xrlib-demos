@@ -12,7 +12,12 @@
 
 cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
 
-set(CMAKE_SUPPRESS_REGENERATION true)
+set(VISIONOS OFF)
+if(CMAKE_SYSTEM_NAME STREQUAL "visionOS")
+    set(VISIONOS ON)
+else()
+    set(CMAKE_SUPPRESS_REGENERATION true)
+endif()
 
 
 ######################
@@ -72,6 +77,11 @@ set(ENABLE_VULKAN_DEBUG ${ENABLE_VULKAN_DEBUG} CACHE BOOL "Enable vulkan debuggi
 # Add xrlib
 set(XRLIB_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/xrlib" CACHE PATH "xrlib source repo")
 
+# Configure OpenXR and MoltenVK before adding xrlib
+if(VISIONOS)
+    include(cmake/visionos.cmake)
+endif()
+
 add_subdirectory("${XRLIB_SOURCE}" "${CMAKE_CURRENT_BINARY_DIR}/xrlib")
 
 set(XRLIB_ROOT "${XRLIB_SOURCE}")
@@ -98,6 +108,7 @@ set(DEMOS
         "demo-03_passthroughxr"
 	    "demo-04_handtrackingxr"
         "demo-05_inputxr"
+        "demo-06_gltfxr"
     )
 
 # Add all demos to project
@@ -105,6 +116,16 @@ if(ANDROID)
     # Only build current project in Android, defined in build.gradle (cmakeArgs)
     add_subdirectory("${ANDROID_PROJECT}")
     message("Android project to build: ${ANDROID_PROJECT}")
+elseif(VISIONOS)
+    set(VISIONOS_PROJECT "" CACHE STRING "Demo to build for visionOS")
+
+    if(NOT VISIONOS_PROJECT MATCHES "^demo-[0-9]+_[a-zA-Z0-9_]+$" OR
+       NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${VISIONOS_PROJECT}/visionos/CMakeLists.txt")
+        message(FATAL_ERROR "Set VISIONOS_PROJECT to a demo with visionOS CMake support, such as demo-02_displayxr")
+    endif()
+
+    add_subdirectory("${VISIONOS_PROJECT}")
+    message(STATUS "visionOS project to build: ${VISIONOS_PROJECT}")
 else()
     foreach(DEMO ${DEMOS})
         add_subdirectory("${DEMO}")

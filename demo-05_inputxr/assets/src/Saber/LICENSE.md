@@ -1,5 +1,5 @@
 Saber.blend
-Copyright 2024-25 Rune Berg (http://runeberg.io | https://github.com/1runeberg)
+Copyright 2024-26 Rune Berg (http://runeberg.io | https://github.com/1runeberg)
 Licensed under CC Attribution-NonCommercial-ShareAlike (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 This work is derived from Kyle Katarn's "lightsaber":

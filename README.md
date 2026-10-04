@@ -14,6 +14,7 @@ queries, rendering, passthrough, hand tracking and controller input.
 - [demo-03_passthroughxr](demo-03_passthroughxr): display passthrough using the FB passthrough extension
 - [demo-04_handtrackingxr](demo-04_handtrackingxr): display joint indicators for tracked hands
 - [demo-05_inputxr](demo-05_inputxr): control a saber with action bindings and haptics, with PBR rendering and optional passthrough
+- [demo-06_gltfxr](demo-06_gltfxr): display PBR glTF models in passthrough
 
 [<img src="images/demo-05_inputxr_thumb.png" alt="inputxr" width="200" />](demo-05_inputxr)
 
@@ -44,7 +45,7 @@ On Windows, install Visual Studio's Desktop development with C++ workload.
 
 On Linux, install GCC or Clang and your hardware platform's development tools.
 
-Run these commands from the repo root to build all six demos.
+Run these commands from the repo root to build the desktop demos.
 
 ### Windows
 
@@ -117,10 +118,24 @@ cd demo-02_displayxr/android
 Use `gradlew.bat assembleDebug` on Windows. APKs are written to the demo's
 `android/build/outputs/apk/` folder.
 
+## visionOS
 
-## Links
+Displayxr and gltfxr have CMake/Xcode builds for physical Vision Pro devices.
+Requires Xcode with the matching visionOS SDK, CMake 3.28 or newer, `glslc` and
+the [public vision-openxr SDK](https://github.com/1runeberg/vision-openxr-sdk).
+Clone the SDK alongside xrlib-demos as `vision-openxr-sdk` and initialise its submodules.
+
+The SDK includes prebuilt `VisionOpenXR.framework` and `MoltenVK.framework` binaries.
+The demos link and embed these frameworks, so the private runtime source isn't needed.
+
+Follow the [displayxr](demo-02_displayxr/README.md#visionos) or
+[gltfxr](demo-06_gltfxr/README.md#build-for-visionos) visionOS build instructions
+to configure, build and run the app in Xcode.
+
+## Connect with me here:
 
 - GitHub: https://github.com/1runeberg
 - Website: http://runeberg.io
-- Social: https://runeberg.social
+- Bluesky: https://runeberg.social
+- Twitter: https://twitter.com/1runeberg
 - YouTube: https://www.youtube.com/@1RuneBerg

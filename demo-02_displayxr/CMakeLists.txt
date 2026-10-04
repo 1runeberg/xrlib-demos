@@ -11,7 +11,12 @@
 
 cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
 
-set(CMAKE_SUPPRESS_REGENERATION true)
+set(VISIONOS OFF)
+if(CMAKE_SYSTEM_NAME STREQUAL "visionOS")
+    set(VISIONOS ON)
+else()
+    set(CMAKE_SUPPRESS_REGENERATION true)
+endif()
 
 
 ######################
@@ -25,6 +30,11 @@ project("${PROJECT_NAME}" VERSION 1.0.0)
 option(STEAMOS_ARM64 "Build for SteamOS ARM64" OFF)
 if(STEAMOS_ARM64)
     add_subdirectory(steamos)
+    return()
+endif()
+
+if(VISIONOS)
+    add_subdirectory(visionos)
     return()
 endif()
 

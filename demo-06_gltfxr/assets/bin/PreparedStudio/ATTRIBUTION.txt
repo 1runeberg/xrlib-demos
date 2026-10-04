@@ -1,0 +1,7 @@
+Studio Small 09
+Sergej Majboroda / Poly Haven
+https://polyhaven.com/a/studio_small_09
+CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/
+
+Source: studio_small_09_1k.hdr
+Prepared lighting generated with xrvk BakeEnvironmentHDR

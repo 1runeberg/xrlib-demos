@@ -1,0 +1,11 @@
+{
+  "fingerprint": "6c011e95a16ed5f7",
+  "tool": "ktx version: v4.4.2",
+  "outputs": {
+    "Saber.gltf": 3542,
+    "hilt.bin": 186120,
+    "textures/image-0.ktx2": 5592976,
+    "textures/image-1.ktx2": 2498256,
+    "textures/image-2.ktx2": 2498256
+  }
+}
