@@ -386,7 +386,7 @@ namespace app
 
 		// (9) Backdrop meshes, generated rather than loaded
 		uint32_t unBackdropPool = 0;
-		pRenderInfo->pDescriptors->CreateDescriptorPool( unBackdropPool, pipelines.pbrFragmentDescriptorLayout, 4 );
+		pRenderInfo->pDescriptors->CreateDescriptorPool( unBackdropPool, pipelines.pbrFragmentDescriptorLayout, 4 * pRenderInfo->GetFramesInFlight() );
 
 		assets.pSky = new CRenderModel( m_pXrSession.get(), pRenderInfo.get(), pipelines.pbrLayout, pipelines.sky );
 		assets.pFloor = new CRenderModel( m_pXrSession.get(), pRenderInfo.get(), pipelines.pbrLayout, pipelines.floor );
