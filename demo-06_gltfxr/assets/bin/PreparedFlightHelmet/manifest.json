@@ -1,0 +1,23 @@
+{
+  "fingerprint": "3f98b397e05b9680",
+  "tool": "ktx version: v4.4.2",
+  "outputs": {
+    "FlightHelmet.bin": 3227148,
+    "FlightHelmet.gltf": 18511,
+    "textures/image-0.ktx2": 5592976,
+    "textures/image-1.ktx2": 2498256,
+    "textures/image-10.ktx2": 2498256,
+    "textures/image-11.ktx2": 2498256,
+    "textures/image-12.ktx2": 1398640,
+    "textures/image-13.ktx2": 626800,
+    "textures/image-14.ktx2": 626800,
+    "textures/image-2.ktx2": 2498256,
+    "textures/image-3.ktx2": 5592976,
+    "textures/image-4.ktx2": 2498256,
+    "textures/image-5.ktx2": 2498256,
+    "textures/image-6.ktx2": 5592976,
+    "textures/image-7.ktx2": 2498256,
+    "textures/image-8.ktx2": 2498256,
+    "textures/image-9.ktx2": 5592976
+  }
+}

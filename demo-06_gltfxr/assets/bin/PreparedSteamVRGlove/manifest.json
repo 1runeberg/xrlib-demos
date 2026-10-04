@@ -1,0 +1,9 @@
+{
+  "fingerprint": "23afabaa691f99d5",
+  "tool": "ktx version: v4.4.2",
+  "outputs": {
+    "steamvr_glove_l.glb": 3835040,
+    "textures/image-0.ktx2": 1398640,
+    "textures/image-1.ktx2": 626800
+  }
+}

@@ -19,6 +19,10 @@
 #include <xrlib/ext/KHR/visibility_mask.hpp> // Stencil out portions of the eye textures that will never be visible to the user
 #include <xrvk/render.hpp>					 // We'll use xrlib's built-in vulkan renderer
 
+#ifdef XR_USE_PLATFORM_VISIONOS
+	#include "../visionos/visionos_app_bridge.h"
+#endif
+
 #ifdef XR_USE_PLATFORM_ANDROID
 	#include <unistd.h>
 #endif
@@ -45,6 +49,13 @@ void android_main( struct android_app *pAndroidApp )
 	// (1b) Initialize android openxr loader
 	if ( !XR_UNQUALIFIED_SUCCESS( pXrInstance->InitAndroidLoader() ) )
 		return xrlib::ExitApp( pAndroidApp );
+#elif defined( XR_USE_PLATFORM_VISIONOS )
+int32_t RunDisplayXr( SampleHostPoll pollHost, void *context )
+{
+	if ( !pollHost )
+		return EXIT_FAILURE;
+
+	std::unique_ptr< CInstance > pXrInstance = std::make_unique< CInstance >( "displayxr", 1 );
 #else
 int main( int argc, char *argv[] )
 {
@@ -55,7 +66,13 @@ int main( int argc, char *argv[] )
 
 	// (2) Enable Vulkan and any supported visibility mask extension
 	std::vector< const char * > vecRequiredExtensions = {
+#ifdef XR_USE_PLATFORM_VISIONOS
+		XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME,
+		XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME,
+		XR_EXT_LOCAL_FLOOR_EXTENSION_NAME,
+#else
 		XR_KHR_VULKAN_ENABLE_EXTENSION_NAME,
+#endif
 	};
 	std::vector< const char * > vecOptionalExtensions = { XR_KHR_VISIBILITY_MASK_EXTENSION_NAME };
 
@@ -68,6 +85,8 @@ int main( int argc, char *argv[] )
 	if ( !XR_UNQUALIFIED_SUCCESS( pXrInstance->Init( vecRequiredExtensions, vecAPILayers, 0, nullptr ) ) )
 #ifdef XR_USE_PLATFORM_ANDROID
 		return xrlib::ExitApp( pAndroidApp );
+#elif defined( XR_USE_PLATFORM_VISIONOS )
+		return EXIT_FAILURE;
 #else
 		return xrlib::ExitApp( EXIT_FAILURE );
 #endif
@@ -80,11 +99,16 @@ int main( int argc, char *argv[] )
 
 	// (5) Create and initialize openxr session
 	std::unique_ptr< CSession > pXrSession = std::make_unique< CSession >( pXrInstance.get() );
+#ifdef XR_USE_PLATFORM_VISIONOS
+	pXrSession->xrAppReferenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR;
+#endif
 
 	SSessionSettings defaultSessionSettings;
 	if ( !XR_UNQUALIFIED_SUCCESS( pXrSession->Init( defaultSessionSettings ) ) )
 #ifdef XR_USE_PLATFORM_ANDROID
 		return xrlib::ExitApp( pAndroidApp );
+#elif defined( XR_USE_PLATFORM_VISIONOS )
+		return EXIT_FAILURE;
 #else
 		return xrlib::ExitApp( EXIT_FAILURE );
 #endif
@@ -98,7 +122,12 @@ int main( int argc, char *argv[] )
 
 	// (7) Set texture formats our app's renderer will use
 	VkFormat vkFormatColor = (VkFormat) pXrSession->SelectColorTextureFormat( { VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SRGB } );
+#ifdef XR_USE_PLATFORM_VISIONOS
+	VkFormat vkFormatDepth = (VkFormat) pXrSession->SelectDepthTextureFormat( { VK_FORMAT_D32_SFLOAT } );
+#else
 	VkFormat vkFormatDepth = (VkFormat) pXrSession->SelectDepthTextureFormat( { VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT_S8_UINT } );
+
+#endif
 
 	if ( vkFormatColor == 0 || vkFormatDepth == 0 )
 	{
@@ -107,6 +136,8 @@ int main( int argc, char *argv[] )
 		LogError( "xrlib", "FATAL: Current openxr runtime does not support the texture formats required by this app" );
 #ifdef XR_USE_PLATFORM_ANDROID
 		return xrlib::ExitApp( pAndroidApp );
+#elif defined( XR_USE_PLATFORM_VISIONOS )
+		return EXIT_FAILURE;
 #else
 		return xrlib::ExitApp( EXIT_FAILURE );
 #endif
@@ -218,7 +249,10 @@ int main( int argc, char *argv[] )
 	XrResult xrPreviousFrameResult = XR_SUCCESS;
 	while ( pXrSession->GetState() != XR_SESSION_STATE_EXITING && pXrSession->GetState() != XR_SESSION_STATE_LOSS_PENDING )
 	{
-#ifdef XR_USE_PLATFORM_ANDROID
+#ifdef XR_USE_PLATFORM_VISIONOS
+		if ( bHostActive )
+			bHostActive = pollHost( context );
+#elif defined( XR_USE_PLATFORM_ANDROID )
 
 		// Quitting from the system menu destroys the activity without the session reaching exiting
 		bHostActive = !pAndroidApp->destroyRequested;
