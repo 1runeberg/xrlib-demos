@@ -632,7 +632,7 @@ namespace
 				{
 					auto setup = std::chrono::steady_clock::now();
 					uint32_t id;
-					CheckVk( resources.info->pDescriptors->CreateDescriptorPool( id, pipelines.pbrFragmentDescriptorLayout, static_cast< uint32_t >( resources.pModel->materials.size() ) ) );
+					CheckVk( resources.info->pDescriptors->CreateDescriptorPool( id, pipelines.pbrFragmentDescriptorLayout, static_cast< uint32_t >( resources.pModel->materials.size() ) * resources.info->GetFramesInFlight() ) );
 					pool = id;
 					if ( resources.pModel->LoadMaterial( resources.info.get(), pipelines.pbrFragmentDescriptorLayout, id, resources.textures.get() ) != resources.pModel->materials.size() )
 						throw std::runtime_error( "Material descriptor setup failed" );
@@ -1044,7 +1044,7 @@ int32_t RunGltfXr( SampleHostPoll pollHost, void *context )
 		resources.images.push_back( skyTexture );
 
 		uint32_t backdropPool = 0;
-		CheckVk( info.pDescriptors->CreateDescriptorPool( backdropPool, pipelines.pbrFragmentDescriptorLayout, 4 ) );
+		CheckVk( info.pDescriptors->CreateDescriptorPool( backdropPool, pipelines.pbrFragmentDescriptorLayout, 4 * info.GetFramesInFlight() ) );
 
 		auto pSky = new CRenderModel( &session, &info, pipelines.pbrLayout, skyPipeline );
 		auto pFloor = new CRenderModel( &session, &info, pipelines.pbrLayout, floorPipeline );
@@ -1184,11 +1184,10 @@ int32_t RunGltfXr( SampleHostPoll pollHost, void *context )
 				log.dirty = false;
 			}
 
-			// Rewriting the lighting descriptors needs earlier frames to finish reading them
+			// Each frame in flight rebinds the lighting descriptors once its earlier work has finished
 			if ( nightLighting == viewer.passthrough )
 			{
 				nightLighting = !viewer.passthrough;
-				vkDeviceWaitIdle( session.GetVulkan()->GetVkLogicalDevice() );
 				CheckVk( info.SetEnvironment( nightLighting ? resources.night : resources.studio, nightLighting ? nightIntensity : studioIntensity, 0.f ), "Switch IBL" );
 			}
 

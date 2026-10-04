@@ -244,11 +244,12 @@ int main( int argc, char *argv[] )
 			// Follow the head with the sky and run the shooting stars
 			pApp->UpdateBackdrop();
 
-			// Update plasma blade effect
+			// Update plasma blade effect, the edited values reach each frame in flight as it's recorded
 			pApp->plasma.UpdateEffect( 
 				pApp->gamestate.vecMaterialData[ pApp->gamestate.leftBladeMateriaDataId ],
 				pApp->gamestate.vecMaterialData[ pApp->gamestate.rightBladeMateriaDataId ] );
-
+			pApp->assets.pBladeLeft->UpdateMaterials();
+			pApp->assets.pBladeRight->UpdateMaterials();
 		}
 
 		// Submit EndRenderFrame to render thread and wait for it, only for a frame that started
