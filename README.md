@@ -14,9 +14,12 @@ queries, rendering, passthrough, hand tracking and controller input.
 - [demo-03_passthroughxr](demo-03_passthroughxr): display passthrough using the FB passthrough extension
 - [demo-04_handtrackingxr](demo-04_handtrackingxr): display joint indicators for tracked hands
 - [demo-05_inputxr](demo-05_inputxr): control a saber with action bindings and haptics, with PBR rendering and optional passthrough
+
+  [<img src="images/demo-05_inputxr_thumb.png" alt="inputxr" width="200" />](demo-05_inputxr)
+
 - [demo-06_gltfxr](demo-06_gltfxr): display PBR glTF models in passthrough
 
-[<img src="images/demo-05_inputxr_thumb.png" alt="inputxr" width="200" />](demo-05_inputxr)
+  [<img src="images/demo_06_gltfxr_thumb.png" alt="gltfxr" width="200" />](demo-06_gltfxr)
 
 Each demo's README describes its controls and features. Extension support depends
 on the device and OpenXR runtime. The shared application code lives in `xrapp/`.
