@@ -1,5 +1,7 @@
 # demo-06_gltfxr
 
+[<img src="../images/demo_06_gltfxr_thumb.png" alt="gltfxr" width="200" />](https://youtu.be/dvE7YCwCSKQ)
+
 A passthrough demo using [xrlib](https://github.com/1runeberg/xrlib) and its optional renderer(xrvk) to load glTF sample models with PBR materials and selectable animations.
 
 - Shared OpenXR scene for Apple Vision Pro and Meta Quest
