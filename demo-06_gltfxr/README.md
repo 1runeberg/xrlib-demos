@@ -4,6 +4,10 @@
 
 A passthrough demo using [xrlib](https://github.com/1runeberg/xrlib) and its optional renderer(xrvk) to load glTF sample models with PBR materials and selectable animations.
 
+This demo can run on visionOS as an ordinary OpenXR app using [vision-openxr](https://github.com/1runeberg/vision-openxr-sdk). I also made a parallel [demo for Godot](https://github.com/1runeberg/vision-openxr-sdk/tree/main/integrations/godot), you'll need to use a branch in my [Godot fork]([https://github.com/1runeberg/godot](https://github.com/1runeberg/godot/tree/pub/final)).
+
+Some key features/info:
+
 - Shared OpenXR scene for Apple Vision Pro and Meta Quest
 - visionOS uses the public [vision-openxr SDK](https://github.com/1runeberg/vision-openxr-sdk), Meta uses `XR_FB_passthrough`
 - Prepared ASTC textures with mipmaps and an on-screen loading log
