@@ -1238,7 +1238,7 @@ int32_t RunGltfXr( SampleHostPoll pollHost, void *context )
 
 					viewer.playback.Update( *pModel, static_cast< double >( time - viewer.playback.epoch ) * 1e-9 );
 
-					// EndRenderFrame waits for the previous draw before the pose buffer is reused
+					// Queue the sampled pose for the next rendered frame
 					CheckVk( pModel->UpdateSkinning(), "Update skinning matrices" );
 				}
 
