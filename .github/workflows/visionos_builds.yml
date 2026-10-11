@@ -1,0 +1,52 @@
+name: visionos-27
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-visionos:
+    runs-on: xcode-27
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+        demo:
+          - demo-02_displayxr
+          - demo-06_gltfxr
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Checkout vision-openxr SDK
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: 1runeberg/vision-openxr-sdk
+          path: vision-openxr-sdk
+
+      - name: Checkout SDK Vulkan headers
+        run: git -C vision-openxr-sdk submodule update --init --depth 1 third_party/vulkan_headers
+
+      - name: Install shader compiler
+        run: brew install shaderc
+
+      - name: Configure CMake on visionOS
+        run: |
+          cmake -S . -B build/visionos -G Xcode \
+            -D CMAKE_SYSTEM_NAME=visionOS \
+            -D CMAKE_OSX_ARCHITECTURES=arm64 \
+            -D CMAKE_OSX_DEPLOYMENT_TARGET=27.0 \
+            -D VISION_OPENXR_SDK="$GITHUB_WORKSPACE/vision-openxr-sdk" \
+            -D VISIONOS_PROJECT=${{ matrix.demo }}
+
+      - name: Build demo
+        run: cmake --build build/visionos --config ${{ matrix.build_type }} -- CODE_SIGNING_ALLOWED=NO
